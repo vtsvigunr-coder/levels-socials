@@ -15,6 +15,7 @@
 .btn--start { height: 36px; padding: 12px 24px; }
 
 .btn--solid { background: var(--white); color: var(--black); }
+.btn--accent { background: var(--accent); color: var(--white); }
 .btn--ghost { background: transparent; color: var(--white); }
 .btn--glass {
   color: var(--white);

@@ -12,15 +12,6 @@ test("renders headline as three separate lines", () => {
   expect(lines[2]).toHaveTextContent("and Control");
 });
 
-test("background video plays once (muted, no loop) with poster", () => {
-  renderHero();
-  const video = screen.getByTestId("hero-video");
-  expect(video.muted).toBe(true);
-  expect(video).not.toHaveAttribute("loop");
-  expect(video).toHaveAttribute("playsinline");
-  expect(video.getAttribute("poster")).toBeTruthy();
-});
-
 test("renders CTA button and explore affordance", () => {
   renderHero();
   expect(screen.getByRole("button", { name: "Start with Levels Socials" })).toBeInTheDocument();

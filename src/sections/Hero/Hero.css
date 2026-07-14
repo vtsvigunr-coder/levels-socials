@@ -6,14 +6,7 @@
   padding: 32px 120px;
   isolation: isolate;
 }
-.hero-video {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; z-index: -2;
-}
-.hero-overlay {
-  position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.05) 100%);
-}
+.hero-headerwrap { position: relative; z-index: 10; }
 
 /* Header */
 .hero-header {

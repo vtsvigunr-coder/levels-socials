@@ -1,11 +1,8 @@
-import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Header from "./Header.jsx";
 import CursorTrail from "./CursorTrail.jsx";
 import Button from "../../components/Button.jsx";
-import heroVideo from "../../assets/hero.mp4";
-import heroPoster from "../../assets/hero-poster.jpg";
 import arrowDown from "../../assets/icons/arrow-down.svg";
 import "./Hero.css";
 
@@ -21,16 +18,6 @@ export const CTA_LINES = [
 
 export default function Hero() {
   const reduced = useReducedMotion();
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = true;
-    const p = v.play();
-    if (p && typeof p.catch === "function") p.catch(() => {});
-  }, []);
-
   const ease = [0.22, 1, 0.36, 1];
 
   const rise = reduced
@@ -44,19 +31,11 @@ export default function Hero() {
 
   return (
     <section className="hero">
-      <video
-        ref={videoRef}
-        className="hero-video"
-        data-testid="hero-video"
-        src={heroVideo}
-        poster={heroPoster}
-        autoPlay
-        muted
-        playsInline
-      />
-      <div className="hero-overlay" />
-
-      <Header />
+      {/* Only the menu slides up on exit (CSS, driven by the parent data-stage);
+          the rest fades + blurs with the stage. */}
+      <div className="hero-headerwrap">
+        <Header />
+      </div>
 
       <motion.h1
         className="hero-title"
