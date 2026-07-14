@@ -1,3 +1,6 @@
+import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Header from "./Header.jsx";
 import Button from "../../components/Button.jsx";
 import heroVideo from "../../assets/hero.mp4";
@@ -8,9 +11,32 @@ import "./Hero.css";
 export const HERO_LINES = ["Social Copy Trading", "Built for Transparency", "and Control"];
 
 export default function Hero() {
+  const reduced = useReducedMotion();
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    const p = v.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  }, []);
+
+  const rise = reduced
+    ? { hidden: { opacity: 1, y: 0 }, show: { opacity: 1, y: 0 } }
+    : { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } };
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduced ? 0 : 0.12, delayChildren: reduced ? 0 : 0.15 } },
+  };
+
+  const ease = [0.22, 1, 0.36, 1];
+
   return (
     <section className="hero">
       <video
+        ref={videoRef}
         className="hero-video"
         data-testid="hero-video"
         src={heroVideo}
@@ -23,23 +49,49 @@ export default function Hero() {
 
       <Header />
 
-      <h1 className="hero-title">
+      <motion.h1
+        className="hero-title"
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
         {HERO_LINES.map((line) => (
-          <span className="hero-line" key={line}>{line}</span>
+          <span className="hero-line" key={line}>
+            <motion.span
+              style={{ display: "block" }}
+              variants={rise}
+              transition={{ duration: 0.6, ease }}
+            >
+              {line}
+            </motion.span>
+          </span>
         ))}
-      </h1>
+      </motion.h1>
 
-      <div className="hero-cta">
+      <motion.div
+        className="hero-cta"
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        transition={{ duration: 0.6, ease, delay: reduced ? 0 : 0.55 }}
+      >
         <p className="hero-lead">
           A platform where investors connect to strategy providers and participate in
           their performance, with full data and complete capital control.
         </p>
         <Button variant="solid">Start with Levels Socials</Button>
-      </div>
+      </motion.div>
 
-      <a className="hero-explore" href="#next">
+      <motion.a
+        className="hero-explore"
+        href="#next"
+        variants={rise}
+        initial="hidden"
+        animate="show"
+        transition={{ duration: 0.6, ease, delay: reduced ? 0 : 0.7 }}
+      >
         Explore more <img src={arrowDown} alt="" aria-hidden="true" />
-      </a>
+      </motion.a>
     </section>
   );
 }
