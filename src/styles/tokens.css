@@ -1,0 +1,17 @@
+:root {
+  --white: #FFFFFF;
+  --black: #000000;
+  --accent: #FF8C3A;
+  --logo-1: #FF964F;
+  --logo-3: #EF5E32;
+
+  --font-heading: "Onest", system-ui, sans-serif;
+  --font-body: "Onest", system-ui, sans-serif;
+  --font-ui: "DM Sans", system-ui, sans-serif;
+
+  /* liquid glass */
+  --glass-blur: 29px;
+  --glass-bg: rgba(30, 24, 20, 0.28);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.25);
+}
