@@ -28,7 +28,40 @@
    the right edge (clipped, not framed). */
 .providers__carousel { display: flex; flex-direction: column; gap: 40px; width: 100%; }
 .providers__viewport { width: 100%; overflow: hidden; }
+.providers__enter { transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
 .providers__track { display: flex; gap: 20px; padding-left: 120px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+
+/* --- Staged entrance (triggered when the site is at the Providers stage) ---
+   1) background blurs (HomePage.css)  2) text rises up  3) cards slide in R->L */
+.providers__tag,
+.providers__title,
+.providers__lead,
+.providers__cta .cta-btn-wrap {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.providers__enter { opacity: 0; transform: translateX(60px); }
+.providers__nav { opacity: 0; transition: opacity 0.6s ease; }
+
+.home[data-stage="1"] .providers__tag,
+.home[data-stage="1"] .providers__title,
+.home[data-stage="1"] .providers__lead,
+.home[data-stage="1"] .providers__cta .cta-btn-wrap {
+  opacity: 1; transform: translateY(0);
+}
+.home[data-stage="1"] .providers__tag   { transition-delay: 0.45s; }
+.home[data-stage="1"] .providers__title { transition-delay: 0.52s; }
+.home[data-stage="1"] .providers__lead  { transition-delay: 0.52s; }
+.home[data-stage="1"] .providers__cta .cta-btn-wrap { transition-delay: 0.60s; }
+.home[data-stage="1"] .providers__enter { opacity: 1; transform: translateX(0); transition-delay: 0.75s; }
+.home[data-stage="1"] .providers__nav   { opacity: 1; transition-delay: 0.9s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .providers__tag, .providers__title, .providers__lead,
+  .providers__cta .cta-btn-wrap, .providers__enter, .providers__nav {
+    opacity: 1; transform: none; transition: none;
+  }
+}
 
 .providers__nav { display: flex; align-items: center; justify-content: space-between; height: 24px; width: 100%; padding: 0 120px; }
 .providers__progress { width: 80px; height: 6px; border-radius: 2px; background: #c4a48b; overflow: hidden; }

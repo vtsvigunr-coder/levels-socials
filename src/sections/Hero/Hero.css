@@ -2,9 +2,10 @@
   position: relative;
   width: 100%;
   min-height: 100vh;
-  overflow: hidden;
   padding: 32px 120px;
-  isolation: isolate;
+  /* NOTE: no `isolation`/`filter`/`transform` here — those establish a backdrop
+     root and would stop the glass (pill/dropdown) from blurring the video,
+     which now lives in the shared background layer above `.hero`. */
 }
 .hero-headerwrap { position: relative; z-index: 10; }
 
@@ -21,7 +22,6 @@
 }
 .nav-pill a, .nav-company { padding: 4px 12px; border-radius: 999px; color: var(--white); }
 .nav-pill a:hover, .nav-company:hover { background: rgba(255,255,255,0.10); }
-.nav-company-wrap { position: relative; }
 .nav-company { display: inline-flex; align-items: center; gap: 6px; }
 .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--grad-orange); }
 .nav-chevron { width: 16px; height: 16px; transition: transform 0.2s ease; }
@@ -35,7 +35,7 @@
    for the entrance, so positioning must use top/left, not a CSS transform.
    `padding-top` bridges the hover gap so the menu stays open. */
 .company-menu-wrap {
-  position: absolute; top: 100%; left: -12px;
+  position: absolute; top: 100%; left: 0;
   padding-top: 10px;
   z-index: 20;
 }

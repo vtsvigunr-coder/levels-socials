@@ -25,35 +25,33 @@ export default function Header() {
         <img src={logo} alt="Levels Socials" />
       </Link>
 
-      <div className="nav-center">
+      {/* nav-center owns the hover region; the dropdown is a SIBLING of the pill
+          (not a descendant) so the pill's backdrop-filter doesn't clip the
+          dropdown's own glass. */}
+      <div className="nav-center" onMouseLeave={scheduleClose}>
         <GlassSurface as="nav" className="nav-pill" radius={600} blur={29}>
-          <div
-            className="nav-company-wrap"
+          <button
+            type="button"
+            className="nav-company"
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
             onMouseEnter={open}
-            onMouseLeave={scheduleClose}
+            onFocus={open}
           >
-            <button
-              type="button"
-              className="nav-company"
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
-              onFocus={open}
-            >
-              <span className="nav-dot" aria-hidden="true" />
-              Company
-              <img
-                src={arrow}
-                alt=""
-                aria-hidden="true"
-                className={`nav-chevron ${menuOpen ? "is-open" : ""}`}
-              />
-            </button>
-            <CompanyMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
-          </div>
+            <span className="nav-dot" aria-hidden="true" />
+            Company
+            <img
+              src={arrow}
+              alt=""
+              aria-hidden="true"
+              className={`nav-chevron ${menuOpen ? "is-open" : ""}`}
+            />
+          </button>
           <Link to="/blog">Blog</Link>
           <Link to="/help">Help Center</Link>
           <Link to="/contact">Contact</Link>
         </GlassSurface>
+        <CompanyMenu open={menuOpen} onClose={() => setMenuOpen(false)} onMouseEnter={open} />
       </div>
 
       <div className="nav-actions">

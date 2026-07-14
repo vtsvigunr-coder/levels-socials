@@ -50,13 +50,16 @@ export default function ProvidersSection() {
 
         <div className="providers__carousel">
           <div className="providers__viewport">
-            <div
-              className="providers__track"
-              style={{ transform: `translate3d(${-offset}px,0,0)` }}
-            >
-              {PROVIDERS.map((p) => (
-                <ProviderCard key={p.id} provider={p} />
-              ))}
+            {/* entrance wrapper slides the whole row in from the right */}
+            <div className="providers__enter">
+              <div
+                className="providers__track"
+                style={{ transform: `translate3d(${-offset}px,0,0)` }}
+              >
+                {PROVIDERS.map((p) => (
+                  <ProviderCard key={p.id} provider={p} />
+                ))}
+              </div>
             </div>
           </div>
 

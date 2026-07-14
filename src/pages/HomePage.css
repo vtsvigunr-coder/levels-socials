@@ -29,19 +29,21 @@
               filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .home__stage--hero { z-index: 2; }
-.home__stage--providers { z-index: 3; opacity: 0; transform: translateY(40px); pointer-events: none; }
+.home__stage--providers { z-index: 3; opacity: 0; pointer-events: none; }
 
-/* Hero -> Providers */
+/* Hero -> Providers: hero softly fades + blurs out first (the background). */
 .home[data-stage="1"] .home__stage--hero {
-  opacity: 0; filter: blur(16px); pointer-events: none;
+  opacity: 0; filter: blur(18px); pointer-events: none;
 }
+/* Providers layer fades in after the background has started blurring; its inner
+   content (text, then cards) is staggered in Providers.css. */
 .home[data-stage="1"] .home__stage--providers {
-  opacity: 1; transform: translateY(0); pointer-events: auto;
-  transition-delay: 0.1s;
+  opacity: 1; pointer-events: auto;
+  transition-delay: 0.35s;
 }
 
 /* Only the menu slides up on exit; the rest just fades + blurs */
-.hero-headerwrap { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.hero-headerwrap { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
 .home[data-stage="1"] .hero-headerwrap { transform: translateY(-180px); }
 
 @media (prefers-reduced-motion: reduce) {

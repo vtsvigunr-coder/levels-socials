@@ -4,7 +4,7 @@ import GlassSurface from "../../components/GlassSurface.jsx";
 import COMPANY_MENU from "../../data/companyMenu.js";
 import arrow from "../../assets/icons/arrow.svg";
 
-export default function CompanyMenu({ open, onClose }) {
+export default function CompanyMenu({ open, onClose, onMouseEnter }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -17,6 +17,7 @@ export default function CompanyMenu({ open, onClose }) {
       {open && (
         <motion.div
           className="company-menu-wrap"
+          onMouseEnter={onMouseEnter}
           initial={{ opacity: 0, y: -8, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.98 }}

@@ -4,7 +4,7 @@ import Hero from "../sections/Hero/Hero.jsx";
 import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
 import "./HomePage.css";
 
-const LOCK_MS = 1000;
+const LOCK_MS = 1200;
 
 export default function HomePage() {
   const [stage, setStage] = useState(0); // 0 = hero, 1 = providers
