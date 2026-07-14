@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Button from "../../components/Button.jsx";
 import ProviderCard from "./ProviderCard.jsx";
 import PROVIDERS from "../../data/providers.js";
@@ -8,35 +8,20 @@ import "./Providers.css";
 
 const CARD_W = 755;
 const GAP = 20;
-const STEP = CARD_W + GAP;
+const STEP = CARD_W + GAP; // advance one full card per switch
 
 export default function ProvidersSection() {
   const [index, setIndex] = useState(0);
-  const [metrics, setMetrics] = useState({ maxScroll: 0, maxIndex: 0 });
-  const vpRef = useRef(null);
-  const trackRef = useRef(null);
+  const maxIndex = PROVIDERS.length - 1;
 
-  useEffect(() => {
-    const measure = () => {
-      const vp = vpRef.current;
-      const tr = trackRef.current;
-      if (!vp || !tr) return;
-      const maxScroll = Math.max(0, tr.scrollWidth - vp.clientWidth);
-      setMetrics({ maxScroll, maxIndex: Math.ceil(maxScroll / STEP) });
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  const clampedIndex = Math.min(index, metrics.maxIndex);
-  const offset = Math.min(clampedIndex * STEP, metrics.maxScroll);
-  const progress = metrics.maxScroll > 0 ? (offset / metrics.maxScroll) * 100 : 0;
+  const clampedIndex = Math.min(Math.max(index, 0), maxIndex);
+  const offset = clampedIndex * STEP;
+  const progress = maxIndex > 0 ? (clampedIndex / maxIndex) * 100 : 0;
   const canPrev = clampedIndex > 0;
-  const canNext = offset < metrics.maxScroll - 0.5;
+  const canNext = clampedIndex < maxIndex;
 
-  const prev = () => setIndex((i) => Math.max(0, Math.min(i, metrics.maxIndex) - 1));
-  const next = () => setIndex((i) => Math.min(metrics.maxIndex, i + 1));
+  const prev = () => setIndex((i) => Math.max(0, i - 1));
+  const next = () => setIndex((i) => Math.min(maxIndex, i + 1));
 
   return (
     <section className="providers">
@@ -64,10 +49,9 @@ export default function ProvidersSection() {
         </div>
 
         <div className="providers__carousel">
-          <div className="providers__viewport" ref={vpRef}>
+          <div className="providers__viewport">
             <div
               className="providers__track"
-              ref={trackRef}
               style={{ transform: `translate3d(${-offset}px,0,0)` }}
             >
               {PROVIDERS.map((p) => (

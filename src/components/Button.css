@@ -4,7 +4,7 @@
   padding: 9px 20px; border-radius: 999px; white-space: nowrap;
   transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
 }
-.btn:hover { transform: translateY(-1px); }
+.btn:hover { opacity: 0.92; }
 
 /* asymmetric "notch" radii (one sharp corner) */
 .btn--notch-br { border-radius: 500px 500px 0 500px; } /* sharp bottom-right */

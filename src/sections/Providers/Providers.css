@@ -5,19 +5,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 120px;
+  padding: 60px 0;
   color: var(--white);
 }
 .providers__inner {
   width: 100%;
-  max-width: 1200px;
   display: flex;
   flex-direction: column;
   gap: 48px;
 }
 
-/* Header */
-.providers__text { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; width: 100%; }
+/* Header — inset to align with the first card's 120px left edge */
+.providers__text { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; width: 100%; padding: 0 120px; }
 .providers__intro { display: flex; flex-direction: column; gap: 12px; }
 .providers__tag { display: flex; align-items: center; gap: 16px; font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; }
 .providers__logoicon { width: 16px; height: 16px; }
@@ -25,12 +24,13 @@
 .providers__cta { display: flex; flex-direction: column; gap: 36px; align-items: flex-start; }
 .providers__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; max-width: 376px; }
 
-/* Carousel */
+/* Carousel — full-bleed; first card starts 120px from the left, next peeks off
+   the right edge (clipped, not framed). */
 .providers__carousel { display: flex; flex-direction: column; gap: 40px; width: 100%; }
 .providers__viewport { width: 100%; overflow: hidden; }
-.providers__track { display: flex; gap: 20px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.providers__track { display: flex; gap: 20px; padding-left: 120px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
 
-.providers__nav { display: flex; align-items: center; justify-content: space-between; height: 24px; width: 100%; }
+.providers__nav { display: flex; align-items: center; justify-content: space-between; height: 24px; width: 100%; padding: 0 120px; }
 .providers__progress { width: 80px; height: 6px; border-radius: 2px; background: #c4a48b; overflow: hidden; }
 .providers__progressfill { display: block; height: 100%; border-radius: 2px; background: var(--grad-orange); transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
 .providers__arrows { display: flex; align-items: center; gap: 16px; }
@@ -85,6 +85,8 @@
 .pcard__chart { width: 429px; height: 287px; border-radius: 8px; flex: none; }
 
 @media (max-width: 1000px) {
-  .providers { padding: 40px 20px; }
-  .providers__text { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .providers { padding: 40px 0; }
+  .providers__text { flex-direction: column; align-items: flex-start; gap: 24px; padding: 0 20px; }
+  .providers__nav { padding: 0 20px; }
+  .providers__track { padding-left: 20px; }
 }

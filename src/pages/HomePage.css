@@ -18,13 +18,15 @@
   background: linear-gradient(180deg, rgba(20,14,10,0.35) 0%, rgba(20,14,10,0.25) 100%);
 }
 
-/* Stages crossfade via CSS (robust + GPU-composited, no rAF dependency) */
+/* Stages crossfade via CSS (robust + GPU-composited, no rAF dependency).
+   NOTE: do NOT put `filter`/`will-change:filter` on this element at rest —
+   it would break `backdrop-filter` on the glass descendants (pill, dropdown,
+   Create Account). The exit blur is only applied at data-stage="1". */
 .home__stage {
   position: fixed; inset: 0;
   transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
               transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
               filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform, filter;
 }
 .home__stage--hero { z-index: 2; }
 .home__stage--providers { z-index: 3; opacity: 0; transform: translateY(40px); pointer-events: none; }
