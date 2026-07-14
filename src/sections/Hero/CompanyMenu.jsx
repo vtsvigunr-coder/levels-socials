@@ -3,20 +3,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import GlassSurface from "../../components/GlassSurface.jsx";
 import COMPANY_MENU from "../../data/companyMenu.js";
 
-export default function CompanyMenu({ open, onClose }) {
+export default function CompanyMenu({ open, onClose, anchorRef }) {
   const ref = useRef(null);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    const onClick = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    const onClick = (e) => {
+      const inPanel = ref.current && ref.current.contains(e.target);
+      const inAnchor = anchorRef && anchorRef.current && anchorRef.current.contains(e.target);
+      if (!inPanel && !inAnchor) onClose();
+    };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onClick);
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
     };
-  }, [open, onClose]);
+  }, [open, onClose, anchorRef]);
 
   return (
     <AnimatePresence>
