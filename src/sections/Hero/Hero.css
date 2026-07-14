@@ -62,6 +62,9 @@
 .hero-explore { position: absolute; left: 120px; bottom: 70px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 14px; }
 .hero-explore img { width: 16px; height: 16px; }
 
+/* Cursor trail overlay */
+.cursor-trail { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+
 @media (max-width: 900px) {
   .hero { padding: 20px; }
   .hero-header { grid-template-columns: 1fr auto; }

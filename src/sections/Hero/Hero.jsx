@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Header from "./Header.jsx";
+import CursorTrail from "./CursorTrail.jsx";
 import Button from "../../components/Button.jsx";
 import heroVideo from "../../assets/hero.mp4";
 import heroPoster from "../../assets/hero-poster.jpg";
@@ -92,6 +93,8 @@ export default function Hero() {
       >
         Explore more <img src={arrowDown} alt="" aria-hidden="true" />
       </motion.a>
+
+      <CursorTrail />
     </section>
   );
 }
