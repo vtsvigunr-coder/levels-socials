@@ -24,30 +24,40 @@
 .nav-center { position: relative; justify-self: center; }
 .nav-pill {
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 8px; font-family: var(--font-ui); font-size: 14px;
+  padding: 4px 12px; font-family: var(--font-ui); font-size: 14px;
 }
-.nav-pill a, .nav-company { padding: 6px 14px; border-radius: 999px; color: var(--white); }
-.nav-pill a:hover, .nav-company:hover { background: rgba(255,255,255,0.08); }
+.nav-pill a, .nav-company { padding: 4px 12px; border-radius: 999px; color: var(--white); }
+.nav-pill a:hover, .nav-company:hover { background: rgba(255,255,255,0.10); }
+.nav-company-wrap { position: relative; }
 .nav-company { display: inline-flex; align-items: center; gap: 6px; }
-.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-.nav-chevron { transition: transform 0.2s ease; }
+.nav-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--grad-orange); }
+.nav-chevron { width: 16px; height: 16px; transition: transform 0.2s ease; }
 .nav-chevron.is-open { transform: rotate(180deg); }
 .nav-actions { justify-self: end; display: flex; align-items: center; gap: 20px; }
 .nav-login { font-family: var(--font-ui); font-size: 14px; }
 
 /* Company dropdown */
-.company-menu-wrap { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: 360px; z-index: 20; }
-.company-menu { list-style: none; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
-.menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; cursor: pointer; }
-.menu-item:hover, .menu-item--active { background: rgba(255,255,255,0.10); }
-.menu-item__icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,255,255,0.10); flex: none; }
-.menu-item--active .menu-item__icon { background: var(--accent); }
+/* left-aligned to the pill's left edge (matches Figma). NOTE: framer-motion
+   controls `transform` on this element for the entrance, so positioning must
+   use `left`, not a CSS transform (which would be overridden). */
+.company-menu-wrap {
+  position: absolute; top: 100%; left: -12px;
+  padding-top: 12px; /* bridges the hover gap so the menu stays open */
+  z-index: 20;
+}
+.company-menu { list-style: none; width: 362px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.menu-item { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; cursor: pointer; }
+.menu-item--active { padding: 8px; border-radius: 12px; background: rgba(255,255,255,0.20); }
+.menu-item:not(.menu-item--active):hover { background: rgba(255,255,255,0.08); border-radius: 12px; }
+.menu-item__left { display: flex; align-items: center; gap: 10px; }
+.menu-item__icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.10); flex: none; }
+.menu-item--active .menu-item__icon { background: var(--grad-orange); }
 .menu-item__icon img { width: 18px; height: 18px; }
-.menu-item__text { display: flex; flex-direction: column; flex: 1; }
-.menu-item__title { display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-weight: 500; font-size: 14px; }
-.menu-item__subtitle { font-size: 12px; color: rgba(255,255,255,0.6); }
-.badge { font-size: 10px; padding: 2px 7px; border-radius: 999px; background: var(--accent); color: var(--black); }
-.menu-item__chevron { color: rgba(255,255,255,0.5); }
+.menu-item__text { display: flex; flex-direction: column; gap: 2px; flex: 1; margin-left: 10px; }
+.menu-item__title { display: flex; align-items: center; gap: 6px; font-family: var(--font-heading); font-weight: 400; font-size: 14px; line-height: 18px; letter-spacing: -0.02em; }
+.menu-item__subtitle { font-size: 12px; line-height: 16px; letter-spacing: -0.02em; color: rgba(255,255,255,0.6); }
+.badge { font-size: 12px; line-height: 16px; padding: 2px 12px; border-radius: 32px; background: var(--grad-orange); color: var(--white); }
+.menu-item__chevron { width: 14px; height: 14px; opacity: 0.6; transform: rotate(-90deg); flex: none; }
 
 /* Hero content */
 .hero-title {
@@ -57,10 +67,15 @@
   display: flex; flex-direction: column;
 }
 .hero-line { display: block; overflow: hidden; }
-.hero-cta { position: absolute; right: 120px; bottom: 70px; width: 372px; display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
-.hero-lead { font-family: var(--font-heading); font-size: 20px; line-height: 26px; letter-spacing: -0.02em; }
-.hero-explore { position: absolute; left: 120px; bottom: 70px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 14px; }
-.hero-explore img { width: 16px; height: 16px; }
+
+.hero-cta { position: absolute; right: 120px; bottom: 70px; width: 372px; display: flex; flex-direction: column; gap: 36px; align-items: flex-start; }
+.hero-lead { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; }
+.hero-lead-line { display: block; overflow: hidden; }
+.cta-btn-wrap { display: flex; align-items: flex-end; gap: 3px; }
+.gradient-dot { width: 4px; height: 4px; border-radius: 500px; background: var(--grad-orange); flex: none; }
+
+.hero-explore { position: absolute; left: 120px; bottom: 70px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 20px; }
+.hero-explore img { width: 20px; height: 20px; }
 
 /* Cursor trail overlay */
 .cursor-trail { position: absolute; inset: 0; z-index: 5; pointer-events: none; }

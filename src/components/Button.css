@@ -5,6 +5,11 @@
   transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
 }
 .btn:hover { transform: translateY(-1px); }
+
+/* asymmetric "notch" radii (one sharp corner) */
+.btn--notch-br { border-radius: 500px 500px 0 500px; } /* sharp bottom-right */
+.btn--notch-bl { border-radius: 500px 500px 500px 0; } /* sharp bottom-left */
+
 .btn--solid { background: var(--white); color: var(--black); }
 .btn--ghost { background: transparent; color: var(--white); }
 .btn--glass {

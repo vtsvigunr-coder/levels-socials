@@ -9,9 +9,12 @@
   --font-body: "Onest", system-ui, sans-serif;
   --font-ui: "DM Sans", system-ui, sans-serif;
 
+  /* orange accent gradient (from Btn.svg: #FF8C3A -> #FFC943, top to bottom) */
+  --grad-orange: linear-gradient(180deg, #FF8C3A 0%, #FFC943 100%);
+
   /* liquid glass */
   --glass-blur: 29px;
-  --glass-bg: rgba(30, 24, 20, 0.28);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --glass-highlight: rgba(255, 255, 255, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.20);
+  --glass-border: rgba(255, 255, 255, 0.22);
+  --glass-highlight: rgba(255, 255, 255, 0.30);
 }

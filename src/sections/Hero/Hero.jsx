@@ -11,6 +11,14 @@ import "./Hero.css";
 
 export const HERO_LINES = ["Social Copy Trading", "Built for Transparency", "and Control"];
 
+// Paragraph line breaks match the Figma layout (372px @ Onest Medium 20/24).
+export const CTA_LINES = [
+  "A platform where investors connect to",
+  "strategy providers and participate in",
+  "their performance, with full data and",
+  "complete capital control.",
+];
+
 export default function Hero() {
   const reduced = useReducedMotion();
   const videoRef = useRef(null);
@@ -23,16 +31,16 @@ export default function Hero() {
     if (p && typeof p.catch === "function") p.catch(() => {});
   }, []);
 
+  const ease = [0.22, 1, 0.36, 1];
+
   const rise = reduced
     ? { hidden: { opacity: 1, y: 0 }, show: { opacity: 1, y: 0 } }
     : { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0 } };
 
-  const container = {
+  const lineContainer = (delay) => ({
     hidden: {},
-    show: { transition: { staggerChildren: reduced ? 0 : 0.12, delayChildren: reduced ? 0 : 0.15 } },
-  };
-
-  const ease = [0.22, 1, 0.36, 1];
+    show: { transition: { staggerChildren: reduced ? 0 : 0.12, delayChildren: reduced ? 0 : delay } },
+  });
 
   return (
     <section className="hero">
@@ -52,17 +60,13 @@ export default function Hero() {
 
       <motion.h1
         className="hero-title"
-        variants={container}
+        variants={lineContainer(0.15)}
         initial="hidden"
         animate="show"
       >
         {HERO_LINES.map((line) => (
           <span className="hero-line" key={line}>
-            <motion.span
-              style={{ display: "block" }}
-              variants={rise}
-              transition={{ duration: 0.6, ease }}
-            >
+            <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
               {line}
             </motion.span>
           </span>
@@ -71,16 +75,23 @@ export default function Hero() {
 
       <motion.div
         className="hero-cta"
-        variants={rise}
+        variants={lineContainer(0.55)}
         initial="hidden"
         animate="show"
-        transition={{ duration: 0.6, ease, delay: reduced ? 0 : 0.55 }}
       >
         <p className="hero-lead">
-          A platform where investors connect to strategy providers and participate in
-          their performance, with full data and complete capital control.
+          {CTA_LINES.map((line) => (
+            <span className="hero-lead-line" key={line}>
+              <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
+                {line}
+              </motion.span>
+            </span>
+          ))}
         </p>
-        <Button variant="solid">Start with Levels Socials</Button>
+        <motion.div className="cta-btn-wrap" variants={rise} transition={{ duration: 0.6, ease }}>
+          <Button variant="solid" className="btn--notch-br">Start with Levels Socials</Button>
+          <span className="gradient-dot" aria-hidden="true" />
+        </motion.div>
       </motion.div>
 
       <motion.a
@@ -89,7 +100,7 @@ export default function Hero() {
         variants={rise}
         initial="hidden"
         animate="show"
-        transition={{ duration: 0.6, ease, delay: reduced ? 0 : 0.7 }}
+        transition={{ duration: 0.6, ease, delay: reduced ? 0 : 0.9 }}
       >
         Explore more <img src={arrowDown} alt="" aria-hidden="true" />
       </motion.a>

@@ -16,15 +16,14 @@ test("renders logo, nav items and auth actions", () => {
   expect(screen.getByRole("button", { name: "Create Account" })).toBeInTheDocument();
 });
 
-test("toggles the Company menu open and closed", async () => {
+test("opens the Company menu on hover and closes on leave", async () => {
   renderHeader();
   const company = screen.getByRole("button", { name: /company/i });
   expect(company).toHaveAttribute("aria-expanded", "false");
   expect(screen.queryByRole("menu")).toBeNull();
-  await userEvent.click(company);
+  await userEvent.hover(company);
   expect(company).toHaveAttribute("aria-expanded", "true");
   expect(screen.getByRole("menu")).toBeInTheDocument();
-  await userEvent.click(company);
-  expect(company).toHaveAttribute("aria-expanded", "false");
+  await userEvent.unhover(company);
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 });
