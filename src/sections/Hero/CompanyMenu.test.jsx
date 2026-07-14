@@ -7,10 +7,11 @@ test("renders nothing when closed", () => {
   expect(container).toBeEmptyDOMElement();
 });
 
-test("renders all 7 items with active + badge when open", () => {
+test("renders all 7 items with badge and no default-active item", () => {
   render(<CompanyMenu open onClose={() => {}} />);
   expect(screen.getAllByRole("menuitem")).toHaveLength(7);
-  expect(screen.getByText("About").closest(".menu-item")).toHaveClass("menu-item--active");
+  // hover/active styling is applied via CSS :hover, so no item is active by default
+  expect(document.querySelector(".menu-item--active")).toBeNull();
   expect(screen.getByText("New")).toBeInTheDocument();
   expect(screen.getByText("Read client experiences")).toBeInTheDocument();
 });

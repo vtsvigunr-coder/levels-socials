@@ -37,27 +37,30 @@
 .nav-login { font-family: var(--font-ui); font-size: 14px; }
 
 /* Company dropdown */
-/* left-aligned to the pill's left edge (matches Figma). NOTE: framer-motion
-   controls `transform` on this element for the entrance, so positioning must
-   use `left`, not a CSS transform (which would be overridden). */
+/* Below the pill, left edge aligned to the pill (matches Figma). Top-based so
+   it is robust to panel height. NOTE: framer-motion controls `transform` here
+   for the entrance, so positioning must use top/left, not a CSS transform.
+   `padding-top` bridges the hover gap so the menu stays open. */
 .company-menu-wrap {
   position: absolute; top: 100%; left: -12px;
-  padding-top: 12px; /* bridges the hover gap so the menu stays open */
+  padding-top: 10px;
   z-index: 20;
 }
-.company-menu { list-style: none; width: 362px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-.menu-item { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; cursor: pointer; }
-.menu-item--active { padding: 8px; border-radius: 12px; background: rgba(255,255,255,0.20); }
-.menu-item:not(.menu-item--active):hover { background: rgba(255,255,255,0.08); border-radius: 12px; }
-.menu-item__left { display: flex; align-items: center; gap: 10px; }
-.menu-item__icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px; background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.10); flex: none; }
-.menu-item--active .menu-item__icon { background: var(--grad-orange); }
-.menu-item__icon img { width: 18px; height: 18px; }
+.company-menu { list-style: none; width: 362px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.menu-item { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 12px; background: transparent; cursor: pointer; transition: background 0.15s ease; }
+.menu-item:hover { background: rgba(255,255,255,0.20); }
+.menu-item__icon {
+  width: 40px; height: 40px; display: grid; place-items: center; border-radius: 8px;
+  background: var(--white); color: #949494; flex: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.menu-item:hover .menu-item__icon { background: var(--grad-orange); color: var(--white); }
+.menu-item__icon svg { width: 16px; height: 16px; display: block; }
 .menu-item__text { display: flex; flex-direction: column; gap: 2px; flex: 1; margin-left: 10px; }
-.menu-item__title { display: flex; align-items: center; gap: 6px; font-family: var(--font-heading); font-weight: 400; font-size: 14px; line-height: 18px; letter-spacing: -0.02em; }
+.menu-item__title { display: flex; align-items: center; gap: 6px; font-family: var(--font-heading); font-weight: 400; font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: var(--white); }
 .menu-item__subtitle { font-size: 12px; line-height: 16px; letter-spacing: -0.02em; color: rgba(255,255,255,0.6); }
 .badge { font-size: 12px; line-height: 16px; padding: 2px 12px; border-radius: 32px; background: var(--grad-orange); color: var(--white); }
-.menu-item__chevron { width: 14px; height: 14px; opacity: 0.6; transform: rotate(-90deg); flex: none; }
+.menu-item__chevron { width: 14px; height: 14px; opacity: 0.7; transform: rotate(-90deg); flex: none; }
 
 /* Hero content */
 .hero-title {

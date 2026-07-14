@@ -89,7 +89,7 @@ export default function Hero() {
           ))}
         </p>
         <motion.div className="cta-btn-wrap" variants={rise} transition={{ duration: 0.6, ease }}>
-          <Button variant="solid" className="btn--notch-br">Start with Levels Socials</Button>
+          <Button variant="solid" className="btn--notch-br btn--start">Start with Levels Socials</Button>
           <span className="gradient-dot" aria-hidden="true" />
         </motion.div>
       </motion.div>

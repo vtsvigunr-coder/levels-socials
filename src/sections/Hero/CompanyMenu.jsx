@@ -24,15 +24,12 @@ export default function CompanyMenu({ open, onClose }) {
         >
           <GlassSurface as="ul" role="menu" className="company-menu" radius={16} blur={40}>
             {COMPANY_MENU.map((item) => (
-              <li
-                key={item.id}
-                role="menuitem"
-                tabIndex={0}
-                className={`menu-item ${item.active ? "menu-item--active" : ""}`.trim()}
-              >
-                <span className="menu-item__icon">
-                  <img src={item.icon} alt="" aria-hidden="true" />
-                </span>
+              <li key={item.id} role="menuitem" tabIndex={0} className="menu-item">
+                <span
+                  className="menu-item__icon"
+                  aria-hidden="true"
+                  dangerouslySetInnerHTML={{ __html: item.icon }}
+                />
                 <span className="menu-item__text">
                   <span className="menu-item__title">
                     {item.title}

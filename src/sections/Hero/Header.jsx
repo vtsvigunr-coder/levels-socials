@@ -58,7 +58,7 @@ export default function Header() {
 
       <div className="nav-actions">
         <Link to="/login" className="nav-login">Login</Link>
-        <Button variant="glass" className="btn--notch-bl">Create Account</Button>
+        <Button variant="glass" className="btn--notch-bl btn--account">Create Account</Button>
       </div>
     </header>
   );
