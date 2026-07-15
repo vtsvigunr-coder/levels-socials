@@ -1,0 +1,227 @@
+/* ===== Key Numbers section ("Levels Socials Today") ===== */
+/* Rendered as stage 2 of the home scroll-jack, so it fills the pinned screen
+   and its content is vertically centered to fit within 100vh. */
+.keynum {
+  height: 100%;
+  background: #fff;
+  padding: 48px 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+.keynum__inner { width: 100%; max-width: 1200px; margin: 0 auto; }
+
+/* --- header --- */
+.keynum__head { display: flex; flex-direction: column; gap: 12px; }
+.keynum__tag {
+  display: flex; align-items: center; gap: 16px;
+  font-family: var(--font-heading); font-size: 14px; line-height: 18px;
+  letter-spacing: -0.02em; color: #949494;
+}
+.keynum__tagicon { width: 16px; height: 16px; }
+.keynum__headtext { display: flex; flex-direction: column; gap: 18px; }
+.keynum__title {
+  font-family: var(--font-heading); font-weight: 500;
+  font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: #000;
+}
+.keynum__subtitle {
+  font-family: var(--font-heading); font-weight: 400;
+  font-size: 16px; line-height: 20px; letter-spacing: -0.02em;
+  color: #949494; max-width: 448px;
+}
+
+/* --- cards row --- */
+/* Full 1200px (matching .keynum__inner) so the row lines up with the same
+   120px side margins as the heading text above, instead of sitting narrower. */
+.keynum__cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  width: 100%; max-width: 1200px; margin: 40px auto 0;
+}
+
+.kn-card {
+  position: relative;
+  aspect-ratio: 386.67 / 514;
+  border-radius: 24px;
+  overflow: hidden;
+  padding: 32px;
+  color: var(--white);
+  isolation: isolate;
+}
+
+/* backgrounds (per Figma specs) */
+.kn-card__bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-position: 50%; background-size: cover; background-repeat: no-repeat;
+}
+/* card 1 — blurred, offset/zoomed image */
+.kn-card--withdrawals .kn-card__bg {
+  background-position: -238.62px -1.717px;
+  background-size: 216.117% 100.184%;
+  filter: blur(28px);
+}
+/* card 2 — cover image on a near-black base */
+.kn-card--investors .kn-card__bg { background-color: #141414; }
+
+.kn-card__overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.kn-card--withdrawals .kn-card__overlay { background: rgba(0, 0, 0, 0.28); }
+.kn-card--investors .kn-card__overlay,
+.kn-card--affiliates .kn-card__overlay {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.50) 100%),
+    linear-gradient(125deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 42%);
+}
+
+/* card 3 — frosted "плашка" that backdrop-blurs the photo behind it.
+   Inset by the card's own 32px padding (per Figma) rather than full-bleed;
+   its own 24px padding then positions the head content (Figma "Content" node). */
+.kn-card__plate {
+  position: absolute; inset: 32px; z-index: 2;
+  padding: 24px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  /* Pre-composite so the blur doesn't lag behind the section's slide-in
+     transform (see GlassSurface.css for the same fix on the header glass). */
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+}
+
+/* The plate is its own positioned ancestor, so the shared absolute footer/logo
+   offsets (tuned for the other two cards' 32px card padding) need re-tuning
+   here to match Figma's Content-relative insets instead of double-counting. */
+.kn-card--affiliates .kn-card__foot { left: 24px; right: 24px; bottom: 24px; }
+.kn-card--affiliates .kn-card__topicon { top: 16px; right: 16px; }
+
+.kn-card__head, .kn-card__foot, .kn-card__pill, .kn-card__topicon { position: relative; z-index: 3; }
+.kn-chart { z-index: 3; }
+
+/* header block */
+.kn-card__head { display: flex; flex-direction: column; gap: 16px; }
+.kn-card__metric { display: flex; flex-direction: column; gap: 12px; }
+.kn-card__value {
+  font-family: var(--font-heading); font-weight: 500;
+  font-size: 42px; line-height: 46px; letter-spacing: -0.03em;
+}
+.kn-card__label {
+  font-family: var(--font-heading); font-weight: 400;
+  font-size: 16px; line-height: 20px; letter-spacing: -0.02em;
+  max-width: 232px;
+}
+.kn-card__disclaimer {
+  align-self: flex-start;
+  font-family: var(--font-heading); font-size: 14px; line-height: 18px;
+  letter-spacing: -0.02em; color: var(--white);
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* top-right logo (card 3) — white by default, crossfades to its own color on
+   hover. Two stacked images + opacity crossfade instead of animating
+   `filter` between "brightness(0) invert(1)" and "none": browsers can't
+   interpolate that filter list smoothly, so it visibly darkened first and
+   then recolored instead of a clean fade. */
+.kn-card__topicon { position: absolute; top: 32px; right: 32px; width: 16px; height: 16px; }
+.kn-card__topicon-img { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 0.25s ease; }
+.kn-card__topicon-img--white { filter: brightness(0) invert(1); opacity: 1; }
+.kn-card__topicon-img--color { opacity: 0; }
+.kn-card--affiliates:hover .kn-card__topicon-img--white { opacity: 0; }
+.kn-card--affiliates:hover .kn-card__topicon-img--color { opacity: 1; }
+
+/* --- charts (default crossfades to hover variant) --- */
+.kn-chart { position: absolute; }
+.kn-chart__img { display: block; width: 100%; height: auto; }
+.kn-chart__img--hover { position: absolute; inset: 0; opacity: 0; transition: opacity 0.25s ease; }
+.kn-card:hover .kn-chart__img--hover { opacity: 1; }
+
+.kn-chart--bars  { left: 13.5%; top: 36.3%; width: 73%; }
+.kn-chart--area  { left: 8.3%;  top: 38%;   width: 83.4%; }
+.kn-chart--lines { right: 0;    bottom: 0;  width: 100%; }
+
+/* +8.6% label sits on the small standalone pill above the bars (rect at
+   x:210.5-268.3, y:0-20 of the 283x233 chart asset -> centered ~84.6%/4.3%).
+   NOTE: bar 3 also has its own bigger decorative box lower down (like bars 1
+   and 2) — that one stays empty by design, do not target it here. */
+.kn-chart__tag {
+  position: absolute; left: 84.6%; top: 4.3%; transform: translate(-50%, -50%);
+  font-family: var(--font-ui); font-weight: 500; font-size: 12px; line-height: 1;
+  letter-spacing: -0.02em; color: var(--accent); white-space: nowrap;
+}
+
+/* area chart axis labels */
+.kn-chart__axis {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; justify-content: space-between;
+  font-family: var(--font-ui); font-size: 12px; line-height: 16px;
+  letter-spacing: -0.02em; color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* --- footers --- */
+.kn-card__foot {
+  position: absolute; left: 32px; right: 32px; bottom: 32px;
+  font-family: var(--font-heading); font-size: 16px; line-height: 20px;
+  letter-spacing: -0.02em; color: var(--white);
+}
+.kn-card--withdrawals .kn-card__foot { text-align: center; }
+
+.kn-card__pill {
+  position: absolute; left: 32px; right: 32px; bottom: 32px; height: 36px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  will-change: backdrop-filter;
+  transform: translateZ(0);
+  font-family: var(--font-heading); font-size: 14px; line-height: 18px;
+  letter-spacing: -0.02em; color: var(--white);
+}
+/* Same white -> color crossfade approach as the card-3 top icon (see above). */
+.kn-card__pillicon { position: relative; width: 16px; height: 16px; flex: none; }
+.kn-card__pillicon-img { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity 0.25s ease; }
+.kn-card__pillicon-img--white { filter: brightness(0) invert(1); opacity: 1; }
+.kn-card__pillicon-img--color { opacity: 0; }
+.kn-card--investors:hover .kn-card__pillicon-img--white { opacity: 0; }
+.kn-card--investors:hover .kn-card__pillicon-img--color { opacity: 1; }
+
+/* --- CTA --- */
+.keynum__cta { justify-content: center; margin-top: 40px; }
+
+/* --- entrance: once scrolled far enough into Key Numbers, the texts and
+   cards rise up into their positions. The section itself is already fully
+   opaque and moving continuously with scroll (see HomePage.jsx/css); this is
+   just the finishing micro-reveal once it's mostly in view
+   (`data-kn-active`, not the old discrete stage index). --- */
+.keynum__tag, .keynum__title, .keynum__subtitle, .keynum__cta,
+.keynum__cards .kn-card {
+  opacity: 0; transform: translateY(48px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.home[data-kn-active="true"] .keynum__tag,
+.home[data-kn-active="true"] .keynum__title,
+.home[data-kn-active="true"] .keynum__subtitle,
+.home[data-kn-active="true"] .keynum__cta,
+.home[data-kn-active="true"] .keynum__cards .kn-card {
+  opacity: 1; transform: translateY(0);
+}
+.home[data-kn-active="true"] .keynum__tag      { transition-delay: 0.05s; }
+.home[data-kn-active="true"] .keynum__title    { transition-delay: 0.12s; }
+.home[data-kn-active="true"] .keynum__subtitle { transition-delay: 0.18s; }
+.home[data-kn-active="true"] .keynum__cards .kn-card:nth-child(1) { transition-delay: 0.30s; }
+.home[data-kn-active="true"] .keynum__cards .kn-card:nth-child(2) { transition-delay: 0.42s; }
+.home[data-kn-active="true"] .keynum__cards .kn-card:nth-child(3) { transition-delay: 0.54s; }
+.home[data-kn-active="true"] .keynum__cta { transition-delay: 0.66s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .keynum__tag, .keynum__title, .keynum__subtitle, .keynum__cta,
+  .keynum__cards .kn-card { transition: none; opacity: 1; transform: none; }
+}
+
+@media (max-width: 900px) {
+  .keynum { height: auto; padding: 64px 20px; }
+  .keynum__cards { grid-template-columns: 1fr; max-width: 386px; }
+}

@@ -1,0 +1,114 @@
+/* ===== Selection Standard — horizontal-scroll section (q-industrial.com/about
+   style): a pinned section whose internal slides advance with scroll amount,
+   a bottom progress bar fills continuously (no snapping), and the last two
+   slides crossfade the whole section from dark to light. ===== */
+.selstd {
+  --theme-t: 0;
+  --bar-frac: 18%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 80px;
+  padding: 100px 120px;
+  overflow: hidden;
+  background: color-mix(in srgb, #141414, #ffffff calc(var(--theme-t) * 100%));
+  color: color-mix(in srgb, #ffffff, #000000 calc(var(--theme-t) * 100%));
+}
+
+/* --- header --- */
+.selstd__head { display: flex; align-items: flex-end; justify-content: space-between; width: 100%; gap: 40px; }
+.selstd__headtext { display: flex; flex-direction: column; gap: 12px; width: 474px; flex: none; }
+.selstd__tag {
+  display: flex; align-items: center; gap: 16px;
+  font-family: var(--font-heading); font-size: 14px; line-height: 18px;
+  letter-spacing: -0.02em; color: #949494;
+}
+.selstd__tagicon { width: 16px; height: 16px; }
+.selstd__title {
+  font-family: var(--font-heading); font-weight: 500;
+  font-size: 42px; line-height: 46px; letter-spacing: -0.03em;
+  width: 506px; max-width: 100%;
+}
+.selstd__lead {
+  font-family: var(--font-heading); font-size: 16px; line-height: 20px;
+  letter-spacing: -0.02em; color: #949494; width: 279px; flex: none;
+}
+
+/* --- body --- */
+.selstd__body { position: relative; width: 100%; flex: 1 1 auto; min-height: 0; }
+.selstd__graph {
+  position: absolute; inset: 0; margin: auto;
+  width: 590px; height: 484px; max-width: 100%; max-height: 100%;
+}
+.selstd__graphimg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  pointer-events: none;
+}
+/* CTA trails the real (still visible) cursor with a small lag, positioned
+   via JS each frame with a translate() — no CSS transition here, since that
+   would fight the per-frame easing already applied in JS. */
+.selstd__cta { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; will-change: transform; }
+.selstd__cta .btn { pointer-events: auto; }
+
+.selstd__desc { position: absolute; left: 0; top: 46%; width: 287px; height: 40px; }
+.selstd__desctext {
+  position: absolute; left: 0; top: 0; width: 287px;
+  font-family: var(--font-heading); font-size: 16px; line-height: 20px;
+  letter-spacing: -0.02em; color: #949494;
+}
+.selstd__desctext--next { color: #949494; }
+
+/* --- footer: step labels + progress bar --- */
+.selstd__foot { display: flex; flex-direction: column; gap: 24px; width: 100%; flex: none; }
+.selstd__steps {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em;
+}
+.selstd__step {
+  --active-t: 0;
+  position: relative;
+  isolation: isolate; /* contains the z-index:-1 highlight below, instead of
+    it escaping behind the section's own opaque background */
+  display: flex; align-items: center; gap: 10px;
+  height: 32px; padding: 4px 12px; border-radius: 4px;
+  color: color-mix(in srgb, currentColor calc(100% - var(--active-t) * 100%), #ffffff calc(var(--active-t) * 100%));
+  transition: color 0.2s ease;
+}
+.selstd__step::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: var(--accent);
+  opacity: var(--active-t);
+  z-index: -1;
+}
+.selstd__stepnum { font-variant-numeric: tabular-nums; }
+
+.selstd__progress { position: relative; width: 100%; height: 5px; }
+.selstd__progresstrack {
+  position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+  transform: translateY(-50%); border-radius: 1px;
+  background: color-mix(in srgb, #737373, #e0e0e0 calc(var(--theme-t) * 100%));
+}
+.selstd__progressfill {
+  position: absolute; left: 0; top: 50%; width: var(--bar-frac); height: 1px;
+  transform: translateY(-50%); border-radius: 1px;
+  background: color-mix(in srgb, #ffffff, var(--accent) calc(var(--theme-t) * 100%));
+}
+.selstd__progressdot {
+  --dot-t: 0;
+  position: absolute; top: 50%;
+  width: calc(3px + var(--dot-t) * 2px); height: calc(3px + var(--dot-t) * 2px);
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: color-mix(in srgb, #ffffff, var(--accent) calc(var(--theme-t) * 100%));
+}
+
+@media (max-width: 1100px) {
+  .selstd { padding: 60px 24px; gap: 40px; }
+  .selstd__head { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .selstd__headtext, .selstd__title { width: auto; }
+  .selstd__body { height: auto; min-height: 420px; }
+  .selstd__cta { display: none; }
+  .selstd__steps { font-size: 13px; }
+}

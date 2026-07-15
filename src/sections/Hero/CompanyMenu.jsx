@@ -18,9 +18,13 @@ export default function CompanyMenu({ open, onClose, onMouseEnter }) {
         <motion.div
           className="company-menu-wrap"
           onMouseEnter={onMouseEnter}
-          initial={{ opacity: 0, y: -8, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.98 }}
+          // NOTE: no `scale` here. Scaling the wrapper scales its glass child,
+          // which forces the `backdrop-filter` to re-sample every frame and
+          // flashes the blur while the menu animates in. Opacity + y only keeps
+          // the backdrop stable so the glass never flickers on appearance.
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
           <GlassSurface as="ul" role="menu" className="company-menu" radius={16} blur={40}>

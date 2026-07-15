@@ -1,8 +1,18 @@
+/* Hero <-> scroll-zone is a discrete pinned jump. Inside the zone, Providers
+   and Key Numbers never fade or disappear: they're both always fully opaque
+   and simply move (inline transform driven by scroll amount in HomePage.jsx),
+   like a normal page scroll. The page itself never scrolls natively. */
 .home { position: fixed; inset: 0; overflow: hidden; }
+
+/* Wrapper carries the scroll-driven position (inline transform, no
+   transition — same 1:1 tracking as the Providers stage it's paired with).
+   The video's own blur/zoom stays a separate, independently-transitioned
+   transform on the child so the two don't fight over one `transform` value. */
+.home__bg { position: absolute; inset: 0; z-index: 0; }
 
 /* Shared background video (persists across stages; blurs on Providers) */
 .bg-video {
-  position: fixed; inset: 0; width: 100%; height: 100%;
+  position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0;
   filter: blur(0px);
   transition: filter 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
@@ -10,7 +20,7 @@
 .bg-video--blur { filter: blur(26px); transform: scale(1.06); }
 
 .home__overlay {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.05) 100%);
   transition: background 0.7s ease;
 }
@@ -18,28 +28,45 @@
   background: linear-gradient(180deg, rgba(20,14,10,0.35) 0%, rgba(20,14,10,0.25) 100%);
 }
 
-/* Stages crossfade via CSS (robust + GPU-composited, no rAF dependency).
-   NOTE: do NOT put `filter`/`will-change:filter` on this element at rest —
-   it would break `backdrop-filter` on the glass descendants (pill, dropdown,
-   Create Account). The exit blur is only applied at data-stage="1". */
+/* NOTE: NEVER put `filter`/`will-change:filter` on `.home__stage--hero` — not
+   even animated on exit. It contains the glass header (nav pill + Create
+   Account), and ANY non-`none` filter on an ancestor breaks their
+   `backdrop-filter`. The exit blur therefore lives on the hero *content*
+   only (see below), never on this wrapper. Opacity crossfade is safe. */
 .home__stage {
-  position: fixed; inset: 0;
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  position: absolute; inset: 0;
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .home__stage--hero { z-index: 2; }
-.home__stage--providers { z-index: 3; opacity: 0; pointer-events: none; }
 
-/* Hero -> Providers: hero softly fades + blurs out first (the background). */
-.home[data-stage="1"] .home__stage--hero {
-  opacity: 0; filter: blur(18px); pointer-events: none;
-}
-/* Providers layer fades in after the background has started blurring; its inner
-   content (text, then cards) is staggered in Providers.css. */
-.home[data-stage="1"] .home__stage--providers {
+/* Providers and Key Numbers: position comes from an inline `transform` set on
+   every scroll tick (see HomePage.jsx) — no CSS transition on `transform`
+   here, so they track the scroll 1:1 instead of easing/catching up behind it.
+   Once inside the zone both stay fully opaque; only their Y position moves. */
+.home__stage--providers { z-index: 3; opacity: 0; pointer-events: none; }
+.home__stage--keynumbers { z-index: 4; opacity: 0; pointer-events: none; }
+.home__stage--selection { z-index: 5; opacity: 0; pointer-events: none; }
+.home[data-stage="1"] .home__stage--providers,
+.home[data-stage="1"] .home__stage--keynumbers,
+.home[data-stage="1"] .home__stage--selection {
   opacity: 1; pointer-events: auto;
   transition-delay: 0.35s;
+}
+
+/* Hero fades out once we leave it (opacity only — no ancestor filter). */
+.home[data-stage="1"] .home__stage--hero {
+  opacity: 0; pointer-events: none;
+}
+
+/* The "blur out" effect is applied to the non-glass hero content only, so the
+   glass header keeps a working backdrop-filter through the whole transition. */
+.hero-title, .hero-cta, .hero-explore {
+  transition: filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.home[data-stage="1"] .hero-title,
+.home[data-stage="1"] .hero-cta,
+.home[data-stage="1"] .hero-explore {
+  filter: blur(18px);
 }
 
 /* Only the menu slides up on exit; the rest just fades + blurs */
@@ -47,5 +74,9 @@
 .home[data-stage="1"] .hero-headerwrap { transform: translateY(-180px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .home__stage, .bg-video, .home__overlay, .hero-headerwrap { transition: none; }
+  .home__stage, .bg-video, .home__overlay, .hero-headerwrap,
+  .hero-title, .hero-cta, .hero-explore { transition: none; }
+  .home[data-stage="1"] .hero-title,
+  .home[data-stage="1"] .hero-cta,
+  .home[data-stage="1"] .hero-explore { filter: none; }
 }
