@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Button from "../../components/Button.jsx";
+import GradientDot from "../../components/GradientDot.jsx";
 import logoIcon from "../../assets/logo-icon.svg";
 import SixPlusCard from "./cards/SixPlusCard.jsx";
 import EarnedAccessCard from "./cards/EarnedAccessCard.jsx";
@@ -58,7 +59,7 @@ export default function ExplorePlatformSlide({ slide, active }) {
           </motion.p>
           <motion.div className="cta-btn-wrap" variants={rise} transition={{ duration: 0.6, ease }}>
             <Button variant="dark" className="btn--notch-bl">Explore the Platform</Button>
-            <span className="gradient-dot" aria-hidden="true" />
+            <GradientDot />
           </motion.div>
         </motion.div>
       </div>

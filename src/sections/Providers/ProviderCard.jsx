@@ -1,4 +1,5 @@
 import { RISK_LABEL } from "../../data/providers.js";
+import GradientDot from "../../components/GradientDot.jsx";
 import chart from "../../assets/card-chart.svg";
 
 export default function ProviderCard({ provider }) {
@@ -25,7 +26,7 @@ export default function ProviderCard({ provider }) {
         </div>
 
         <div className="pcard__profile">
-          <span className="gradient-dot" aria-hidden="true" />
+          <GradientDot />
           <button type="button" className="pcard__profilebtn">View Profile</button>
         </div>
       </div>

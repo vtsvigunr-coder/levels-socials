@@ -3,6 +3,7 @@ import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Header from "./Header.jsx";
 import CursorTrail from "./CursorTrail.jsx";
 import Button from "../../components/Button.jsx";
+import GradientDot from "../../components/GradientDot.jsx";
 import arrowDown from "../../assets/icons/arrow-down.svg";
 import "./Hero.css";
 
@@ -69,7 +70,7 @@ export default function Hero() {
         </p>
         <motion.div className="cta-btn-wrap" variants={rise} transition={{ duration: 0.6, ease }}>
           <Button variant="solid" className="btn--notch-br btn--start">Start with Levels Socials</Button>
-          <span className="gradient-dot" aria-hidden="true" />
+          <GradientDot />
         </motion.div>
       </motion.div>
 

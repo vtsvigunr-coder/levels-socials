@@ -1,4 +1,5 @@
 import Button from "../../components/Button.jsx";
+import GradientDot from "../../components/GradientDot.jsx";
 import ProviderCard from "./ProviderCard.jsx";
 import PROVIDERS from "../../data/providers.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -37,7 +38,7 @@ export default function ProvidersSection({ progress = 0 }) {
             </p>
             <div className="cta-btn-wrap">
               <Button variant="accent" className="btn--notch-br btn--start">Explore Providers</Button>
-              <span className="gradient-dot" aria-hidden="true" />
+              <GradientDot />
             </div>
           </div>
         </div>

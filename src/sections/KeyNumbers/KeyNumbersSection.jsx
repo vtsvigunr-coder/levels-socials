@@ -1,4 +1,5 @@
 import Button from "../../components/Button.jsx";
+import GradientDot from "../../components/GradientDot.jsx";
 import KeyNumberCard from "./KeyNumberCard.jsx";
 import KEY_NUMBERS from "../../data/keyNumbers.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -27,7 +28,7 @@ export default function KeyNumbersSection() {
 
         <div className="keynum__cta cta-btn-wrap">
           <Button variant="dark" className="btn--notch-br btn--start">Start with Levels Socials</Button>
-          <span className="gradient-dot" aria-hidden="true" />
+          <GradientDot />
         </div>
       </div>
     </section>

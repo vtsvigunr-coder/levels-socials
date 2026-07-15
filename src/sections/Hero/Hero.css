@@ -68,7 +68,37 @@
 .hero-lead { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; }
 .hero-lead-line { display: block; overflow: hidden; }
 .cta-btn-wrap { display: flex; align-items: flex-end; gap: 3px; }
-.gradient-dot { width: 4px; height: 4px; border-radius: 500px; background: var(--grad-orange); flex: none; }
+
+/* Small orange dot that sits at a button's sharp notch corner. On hover it
+   grows into a square (matching the button's own rendered height, via flex
+   stretch + aspect-ratio, no hardcoded size) and reveals an arrow — same
+   interaction as the Figma "Hovered" button variants. Default corner radii
+   assume the dot trails the button (sharp corner on its own bottom-left,
+   against the button's right edge); .pcard__profile mirrors this since there
+   the dot leads the button instead. */
+.gradient-dot {
+  width: 4px; height: 4px; border-radius: 500px; background: var(--grad-orange); flex: none;
+  display: grid; place-items: center; overflow: hidden;
+  transition: width 0.25s cubic-bezier(0.22,1,0.36,1), height 0.25s cubic-bezier(0.22,1,0.36,1),
+    border-radius 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.gradient-dot__icon {
+  width: 20px; height: 20px; flex: none; opacity: 0; transform: scale(0.4);
+  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.22,1,0.36,1);
+}
+.cta-btn-wrap:hover .gradient-dot,
+.pcard__profile:hover .gradient-dot {
+  width: auto; height: auto; align-self: stretch; aspect-ratio: 1 / 1;
+  border-radius: 500px 500px 500px 12px;
+}
+.pcard__profile:hover .gradient-dot { border-radius: 500px 500px 12px 500px; }
+.cta-btn-wrap:hover .gradient-dot__icon,
+.pcard__profile:hover .gradient-dot__icon {
+  opacity: 1; transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .gradient-dot, .gradient-dot__icon { transition: none; }
+}
 
 .hero-explore { position: absolute; left: 120px; bottom: 70px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 20px; }
 .hero-explore img { width: 20px; height: 20px; }
