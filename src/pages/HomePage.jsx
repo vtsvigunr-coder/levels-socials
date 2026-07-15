@@ -92,7 +92,22 @@ export default function HomePage() {
         return;
       }
 
-      const nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
+      let nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
+
+      // SELECTION_STAGE used to double as V_MAX, so the vertical clamp above
+      // guaranteed vRef landed exactly on it before Explore Platform existed.
+      // Now that V_MAX is well past it, an ordinary scroll delta can step
+      // clean over SELECTION_STAGE without ever equaling it, and
+      // inHorizontalPhase's exact-equality check above would never fire.
+      // Snap to it instead of overshooting, in either direction, whenever
+      // that direction's horizontal sweep hasn't finished yet — the leftover
+      // delta is dropped for this tick, same as the old hard ceiling did.
+      if (dy > 0 && vRef.current < SELECTION_STAGE && nextV > SELECTION_STAGE && hRef.current < 1) {
+        nextV = SELECTION_STAGE;
+      } else if (dy < 0 && vRef.current > SELECTION_STAGE && nextV < SELECTION_STAGE && hRef.current > 0) {
+        nextV = SELECTION_STAGE;
+      }
+
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
         return;
