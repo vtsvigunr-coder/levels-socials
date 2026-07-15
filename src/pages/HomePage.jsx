@@ -4,13 +4,16 @@ import Hero from "../sections/Hero/Hero.jsx";
 import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
 import KeyNumbersSection from "../sections/KeyNumbers/KeyNumbersSection.jsx";
 import SelectionStandardSection from "../sections/SelectionStandard/SelectionStandardSection.jsx";
+import ExplorePlatformSlide from "../sections/ExplorePlatform/ExplorePlatformSlide.jsx";
+import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
 const LOCK_MS = 900; // debounce only for the hero <-> scroll-zone jump
 const ENTER_THRESHOLD = 6; // wheel/touch deadband before that jump fires
 const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers/Key Numbers/Selection Standard)
 const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
-const V_MAX = 2; // 0 = Providers, 1 = Key Numbers, 2 = Selection Standard
+const SELECTION_STAGE = 2; // Selection Standard's index — the one stage with a horizontal sub-phase
+const V_MAX = 6; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards
 const PROVIDERS_GATE_COUNT = 2; // forward scrolls absorbed on Providers before the 3rd hands off to vertical scroll
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
@@ -63,8 +66,14 @@ export default function HomePage() {
       // scroll — not as a continuation of the same fling that revealed it.
       if (lockedRef.current) return;
 
-      const atLastVertical = vRef.current >= V_MAX;
-      if (atLastVertical && (hRef.current > 0 || dy > 0)) {
+      // Horizontal phase only applies to Selection Standard itself; once its
+      // slides are fully swept (hRef === 1), forward scroll falls through to
+      // the normal vertical branch below and continues into Explore Platform.
+      const inHorizontalPhase =
+        vRef.current === SELECTION_STAGE &&
+        (hRef.current > 0 || dy > 0) &&
+        (dy < 0 || hRef.current < 1);
+      if (inHorizontalPhase) {
         // Horizontal phase: scrolling further down sweeps Selection Standard's
         // slides; scrolling up drains it back to 0 before handing control
         // back to the vertical scroll above.
@@ -125,6 +134,12 @@ export default function HomePage() {
   const providersRel = rel(vScroll, 0);
   const keynumbersRel = rel(vScroll, 1);
   const selectionRel = rel(vScroll, 2);
+  const explorePlatformStages = [3, 4, 5, 6].map((stageIndex, i) => ({
+    stageIndex,
+    slide: EXPLORE_PLATFORM_SLIDES[i],
+    rel: rel(vScroll, stageIndex),
+    active: vScroll > stageIndex - 0.5,
+  }));
 
   return (
     <main
@@ -170,6 +185,17 @@ export default function HomePage() {
       >
         <SelectionStandardSection active={selectionActive} progress={hScroll} />
       </div>
+
+      {explorePlatformStages.map(({ stageIndex, slide, rel: stageRel, active }) => (
+        <div
+          key={slide.id}
+          className="home__stage home__stage--explore"
+          style={{ zIndex: 6 + (stageIndex - 3), transform: `translateY(${(-stageRel * 100).toFixed(3)}%)` }}
+          aria-hidden={stage === 0 || Math.abs(stageRel) >= 1}
+        >
+          <ExplorePlatformSlide slide={slide} active={active} />
+        </div>
+      ))}
     </main>
   );
 }
