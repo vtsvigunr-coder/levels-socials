@@ -99,7 +99,7 @@
 .selstd__progressdot {
   --dot-t: 0;
   position: absolute; top: 50%;
-  width: calc(3px + var(--dot-t) * 2px); height: calc(3px + var(--dot-t) * 2px);
+  width: calc(var(--dot-t) * 5px); height: calc(var(--dot-t) * 5px);
   transform: translate(-50%, -50%); border-radius: 50%;
   background: color-mix(in srgb, #ffffff, var(--accent) calc(var(--theme-t) * 100%));
 }
