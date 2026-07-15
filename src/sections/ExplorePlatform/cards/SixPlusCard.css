@@ -1,6 +1,5 @@
 /* src/sections/ExplorePlatform/cards/SixPlusCard.css */
-.xp-card { position: relative; width: 100%; height: 100%; overflow: hidden; }
-.xp-card__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* .xp-card / .xp-card__bg live in ../ExplorePlatform.css (shared by all 4 cards). */
 .xp-card__caption {
   position: absolute; left: 32px; right: 32px; bottom: 32px;
   font-family: var(--font-heading); font-size: 19.6px; line-height: 25.2px;
