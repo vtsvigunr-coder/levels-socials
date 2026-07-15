@@ -59,7 +59,7 @@
 .hero-title {
   position: absolute; left: 120px; top: 200px; max-width: 560px;
   font-family: var(--font-heading); font-weight: 500;
-  font-size: 50px; line-height: 54px; letter-spacing: -0.03em;
+  font-size: 50px; line-height: 60px; letter-spacing: -0.03em;
   display: flex; flex-direction: column;
 }
 .hero-line { display: block; overflow: hidden; }
@@ -80,6 +80,6 @@
   .hero { padding: 20px; }
   .hero-header { grid-template-columns: 1fr auto; }
   .nav-center { display: none; }
-  .hero-title { position: static; margin-top: 120px; font-size: 36px; line-height: 40px; }
+  .hero-title { position: static; margin-top: 120px; font-size: 36px; line-height: 44px; }
   .hero-cta, .hero-explore { position: static; width: auto; margin-top: 32px; }
 }
