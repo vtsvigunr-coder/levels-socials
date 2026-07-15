@@ -11,6 +11,7 @@ const ENTER_THRESHOLD = 6; // wheel/touch deadband before that jump fires
 const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers/Key Numbers/Selection Standard)
 const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
 const V_MAX = 2; // 0 = Providers, 1 = Key Numbers, 2 = Selection Standard
+const PROVIDERS_GATE_COUNT = 2; // forward scrolls absorbed on Providers before the 3rd hands off to vertical scroll
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -24,6 +25,7 @@ export default function HomePage() {
   const vRef = useRef(0);
   const hRef = useRef(0);
   const lockedRef = useRef(false);
+  const providersGateRef = useRef(0); // forward scrolls consumed on Providers since it last appeared
 
   useEffect(() => { stageRef.current = stage; }, [stage]);
   useEffect(() => { vRef.current = vScroll; }, [vScroll]);
@@ -39,6 +41,7 @@ export default function HomePage() {
     const enterZone = () => {
       lockedRef.current = true;
       vRef.current = 0; hRef.current = 0;
+      providersGateRef.current = 0;
       setVScroll(0); setHScroll(0);
       setStage(1);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
@@ -72,11 +75,20 @@ export default function HomePage() {
         return;
       }
 
+      // Providers (vRef at exactly 0): the first couple of forward scrolls are
+      // absorbed instead of moving on immediately — only the next one after
+      // that hands off to the vertical scroll toward Key Numbers.
+      if (vRef.current === 0 && dy > ENTER_THRESHOLD && providersGateRef.current < PROVIDERS_GATE_COUNT) {
+        providersGateRef.current += 1;
+        return;
+      }
+
       const nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
         return;
       }
+      if (nextV === 0) providersGateRef.current = 0;
       vRef.current = nextV;
       setVScroll(nextV);
     };
