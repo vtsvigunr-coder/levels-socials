@@ -1,0 +1,19 @@
+/* src/sections/ExplorePlatform/cards/EarnedAccessCard.css */
+.xp-card--earned .xp-card__overlay { position: absolute; inset: 0; background: rgba(20, 20, 20, 0.64); }
+.xp-earned__wave { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+.xp-earned__pill {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 306.6px; display: flex; align-items: center; gap: 14px;
+  padding: 14px 19.6px 14px 14px; border-radius: 16.8px;
+  background: rgba(255, 255, 255, 0.2); overflow: hidden;
+}
+.xp-earned__badge {
+  width: 56px; height: 56px; border-radius: 9.14px; flex: none;
+  background: var(--grad-orange);
+  display: flex; align-items: center; justify-content: center;
+}
+.xp-earned__badge img { width: 22.4px; height: 22.4px; }
+.xp-earned__text { display: flex; flex-direction: column; gap: 2.8px; color: var(--white); white-space: nowrap; }
+.xp-earned__title { font-family: var(--font-heading); font-size: 16.8px; line-height: 22.4px; letter-spacing: -0.02em; }
+.xp-earned__subtitle { font-family: var(--font-heading); font-size: 22.4px; line-height: 28px; letter-spacing: -0.02em; }
