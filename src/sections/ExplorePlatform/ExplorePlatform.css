@@ -28,11 +28,11 @@
 }
 
 /* Shared by all 4 card components (SixPlusCard, EarnedAccessCard,
-   FourteenDaysCard, DashboardCard) — lives here rather than in any one
-   card's stylesheet so each card is correctly positioned even if rendered
-   in isolation, without depending on a sibling card's CSS having loaded. */
+   FourteenDaysCard, DashboardCard) — each is just one flattened image with
+   a fade + blur entrance, so this base positioning + the entrance target
+   class live here rather than in any one card's stylesheet. */
 .xp-card { position: relative; width: 100%; height: 100%; overflow: hidden; }
-.xp-card__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.xp-card__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 @media (prefers-reduced-motion: reduce) {
   .xp-slide__line { overflow: visible; }

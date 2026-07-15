@@ -8,9 +8,7 @@ test("HomePage renders a home landmark", () => {
 });
 
 test("renders the Explore Platform stages", () => {
-  render(<MemoryRouter><HomePage /></MemoryRouter>);
-  expect(screen.getByText("6+ Month")).toBeInTheDocument();
-  expect(screen.getByText("Selection Review")).toBeInTheDocument();
-  expect(screen.getByText("14 Days")).toBeInTheDocument();
+  const { container } = render(<MemoryRouter><HomePage /></MemoryRouter>);
   expect(screen.getAllByText("Explore Platform").length).toBe(4);
+  expect(container.querySelectorAll("img.xp-card__img").length).toBe(4);
 });
