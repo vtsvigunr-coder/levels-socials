@@ -1,27 +1,21 @@
-import { useState } from "react";
 import Button from "../../components/Button.jsx";
 import ProviderCard from "./ProviderCard.jsx";
 import PROVIDERS from "../../data/providers.js";
 import logoIcon from "../../assets/logo-icon.svg";
-import arrow from "../../assets/icons/arrow.svg";
+import arrowRight from "../../assets/icons/arrow-right.svg";
 import "./Providers.css";
 
 const CARD_W = 755;
 const GAP = 20;
-const STEP = CARD_W + GAP; // advance one full card per switch
+const STEP = CARD_W + GAP; // advance one full card per horizontal-scroll step
+// One extra "slide" beyond the last card, for the closing CTA to scroll into view.
+const SLIDE_COUNT = PROVIDERS.length + 1;
 
-export default function ProvidersSection() {
-  const [index, setIndex] = useState(0);
-  const maxIndex = PROVIDERS.length - 1;
-
-  const clampedIndex = Math.min(Math.max(index, 0), maxIndex);
-  const offset = clampedIndex * STEP;
-  const progress = maxIndex > 0 ? (clampedIndex / maxIndex) * 100 : 0;
-  const canPrev = clampedIndex > 0;
-  const canNext = clampedIndex < maxIndex;
-
-  const prev = () => setIndex((i) => Math.max(0, i - 1));
-  const next = () => setIndex((i) => Math.min(maxIndex, i + 1));
+export default function ProvidersSection({ progress = 0 }) {
+  // Continuous position across the cards + closing CTA, driven 1:1 by
+  // horizontal scroll — no CSS transition, so it never lags behind the
+  // scroll amount (same pattern as Selection Standard's panelPos).
+  const offset = Math.min(1, Math.max(0, progress)) * (SLIDE_COUNT - 1) * STEP;
 
   return (
     <section className="providers">
@@ -59,33 +53,11 @@ export default function ProvidersSection() {
                 {PROVIDERS.map((p) => (
                   <ProviderCard key={p.id} provider={p} />
                 ))}
+                <a href="#start" className="providers__finalcta">
+                  Start with Levels Socials
+                  <img src={arrowRight} alt="" aria-hidden="true" className="providers__finalctaicon" />
+                </a>
               </div>
-            </div>
-          </div>
-
-          <div className="providers__nav">
-            <div className="providers__progress" role="progressbar" aria-valuenow={Math.round(progress)}>
-              <span className="providers__progressfill" style={{ width: `${progress}%` }} />
-            </div>
-            <div className="providers__arrows">
-              <button
-                type="button"
-                className="providers__arrow"
-                onClick={prev}
-                disabled={!canPrev}
-                aria-label="Previous providers"
-              >
-                <img src={arrow} alt="" aria-hidden="true" style={{ transform: "rotate(90deg)" }} />
-              </button>
-              <button
-                type="button"
-                className="providers__arrow"
-                onClick={next}
-                disabled={!canNext}
-                aria-label="Next providers"
-              >
-                <img src={arrow} alt="" aria-hidden="true" style={{ transform: "rotate(-90deg)" }} />
-              </button>
             </div>
           </div>
         </div>

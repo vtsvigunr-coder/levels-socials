@@ -12,9 +12,10 @@ const LOCK_MS = 900; // debounce only for the hero <-> scroll-zone jump
 const ENTER_THRESHOLD = 6; // wheel/touch deadband before that jump fires
 const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers/Key Numbers/Selection Standard)
 const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
-const SELECTION_STAGE = 2; // Selection Standard's index — the one stage with a horizontal sub-phase
+const PROVIDERS_H_RANGE = 900; // accumulated px of scroll to sweep Providers' cards + closing CTA
+const PROVIDERS_STAGE = 0; // Providers' index — also has a horizontal sub-phase
+const SELECTION_STAGE = 2; // Selection Standard's index — the other stage with a horizontal sub-phase
 const V_MAX = 6; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards
-const PROVIDERS_GATE_COUNT = 2; // forward scrolls absorbed on Providers before the 3rd hands off to vertical scroll
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -24,15 +25,17 @@ export default function HomePage() {
   const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal)
   const [vScroll, setVScroll] = useState(0); // 0..2, continuous position across Providers/Key Numbers/Selection Standard
   const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
+  const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
   const stageRef = useRef(0);
   const vRef = useRef(0);
   const hRef = useRef(0);
+  const hProvidersRef = useRef(0);
   const lockedRef = useRef(false);
-  const providersGateRef = useRef(0); // forward scrolls consumed on Providers since it last appeared
 
   useEffect(() => { stageRef.current = stage; }, [stage]);
   useEffect(() => { vRef.current = vScroll; }, [vScroll]);
   useEffect(() => { hRef.current = hScroll; }, [hScroll]);
+  useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -43,9 +46,8 @@ export default function HomePage() {
     // its internal horizontal slides instead of scrolling further down.
     const enterZone = () => {
       lockedRef.current = true;
-      vRef.current = 0; hRef.current = 0;
-      providersGateRef.current = 0;
-      setVScroll(0); setHScroll(0);
+      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0;
+      setVScroll(0); setHScroll(0); setHScrollProviders(0);
       setStage(1);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
@@ -66,6 +68,22 @@ export default function HomePage() {
       // scroll — not as a continuation of the same fling that revealed it.
       if (lockedRef.current) return;
 
+      // Providers has its own horizontal sub-phase (cards + closing CTA), the
+      // same shape as Selection Standard's below. Since Providers sits at
+      // V_MIN (0), it can never be overshot from below, so — unlike Selection
+      // Standard — it needs no extra vertical-snap guard.
+      const inProvidersHorizontalPhase =
+        vRef.current === PROVIDERS_STAGE &&
+        (hProvidersRef.current > 0 || dy > 0) &&
+        (dy < 0 || hProvidersRef.current < 1);
+      if (inProvidersHorizontalPhase) {
+        const nextH = Math.min(1, Math.max(0, hProvidersRef.current + dy / PROVIDERS_H_RANGE));
+        if (nextH === hProvidersRef.current) return;
+        hProvidersRef.current = nextH;
+        setHScrollProviders(nextH);
+        return;
+      }
+
       // Horizontal phase only applies to Selection Standard itself; once its
       // slides are fully swept (hRef === 1), forward scroll falls through to
       // the normal vertical branch below and continues into Explore Platform.
@@ -81,14 +99,6 @@ export default function HomePage() {
         if (nextH === hRef.current) return;
         hRef.current = nextH;
         setHScroll(nextH);
-        return;
-      }
-
-      // Providers (vRef at exactly 0): the first couple of forward scrolls are
-      // absorbed instead of moving on immediately — only the next one after
-      // that hands off to the vertical scroll toward Key Numbers.
-      if (vRef.current === 0 && dy > ENTER_THRESHOLD && providersGateRef.current < PROVIDERS_GATE_COUNT) {
-        providersGateRef.current += 1;
         return;
       }
 
@@ -112,7 +122,6 @@ export default function HomePage() {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
         return;
       }
-      if (nextV === 0) providersGateRef.current = 0;
       vRef.current = nextV;
       setVScroll(nextV);
     };
@@ -182,7 +191,7 @@ export default function HomePage() {
         style={{ transform: `translateY(${(-providersRel * 100).toFixed(3)}%)` }}
         aria-hidden={stage === 0 || providersRel >= 1}
       >
-        <ProvidersSection />
+        <ProvidersSection progress={hScrollProviders} />
       </div>
 
       <div

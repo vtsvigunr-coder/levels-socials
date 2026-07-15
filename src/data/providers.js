@@ -33,28 +33,6 @@ const PROVIDERS = [
     accuracy: "72.16%",
     drawdown: "-18.35%",
   },
-  {
-    id: "nhea-ea",
-    name: "NHEA EA",
-    strategy: "Trend Following",
-    risk: "medium",
-    description:
-      "Rule-based trend system designed for active markets with structured risk management.",
-    totalRoi: "+436.42%",
-    accuracy: "64.78%",
-    drawdown: "-27.91%",
-  },
-  {
-    id: "gbp-master",
-    name: "GBP Master",
-    strategy: "Balanced FX",
-    risk: "low",
-    description:
-      "Balanced GBP-focused strategy combining selective entries, controlled risk, and consistent monitoring.",
-    totalRoi: "+1514.09%",
-    accuracy: "60.18%",
-    drawdown: "-16.73%",
-  },
 ];
 
 export const RISK_LABEL = { low: "Low Risk", medium: "Medium Risk" };

@@ -29,7 +29,14 @@
 .providers__carousel { display: flex; flex-direction: column; gap: 40px; width: 100%; }
 .providers__viewport { width: 100%; overflow: hidden; }
 .providers__enter { transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
-.providers__track { display: flex; gap: 20px; padding-left: 120px; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.providers__track { display: flex; align-items: center; gap: 20px; padding-left: 120px; will-change: transform; }
+
+.providers__finalcta {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  color: var(--white); font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.providers__finalctaicon { width: 12px; height: 17px; transform: rotate(90deg); }
 
 /* --- Staged entrance (triggered when the site is at the Providers stage) ---
    1) background blurs (HomePage.css)  2) text rises up  3) cards slide in R->L */
@@ -41,7 +48,6 @@
   transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 .providers__enter { opacity: 0; transform: translateX(60px); }
-.providers__nav { opacity: 0; transition: opacity 0.6s ease; }
 
 .home[data-stage="1"] .providers__tag,
 .home[data-stage="1"] .providers__title,
@@ -54,22 +60,13 @@
 .home[data-stage="1"] .providers__lead  { transition-delay: 0.52s; }
 .home[data-stage="1"] .providers__cta .cta-btn-wrap { transition-delay: 0.60s; }
 .home[data-stage="1"] .providers__enter { opacity: 1; transform: translateX(0); transition-delay: 0.75s; }
-.home[data-stage="1"] .providers__nav   { opacity: 1; transition-delay: 0.9s; }
 
 @media (prefers-reduced-motion: reduce) {
   .providers__tag, .providers__title, .providers__lead,
-  .providers__cta .cta-btn-wrap, .providers__enter, .providers__nav {
+  .providers__cta .cta-btn-wrap, .providers__enter {
     opacity: 1; transform: none; transition: none;
   }
 }
-
-.providers__nav { display: flex; align-items: center; justify-content: space-between; height: 24px; width: 100%; padding: 0 120px; }
-.providers__progress { width: 80px; height: 6px; border-radius: 2px; background: #c4a48b; overflow: hidden; }
-.providers__progressfill { display: block; height: 100%; border-radius: 2px; background: var(--grad-orange); transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
-.providers__arrows { display: flex; align-items: center; gap: 16px; }
-.providers__arrow { width: 24px; height: 24px; display: grid; place-items: center; color: var(--white); transition: opacity 0.2s ease; }
-.providers__arrow img { width: 20px; height: 20px; }
-.providers__arrow:disabled { opacity: 0.3; cursor: default; }
 
 /* Card */
 .pcard {
@@ -120,6 +117,5 @@
 @media (max-width: 1000px) {
   .providers { padding: 40px 0; }
   .providers__text { flex-direction: column; align-items: flex-start; gap: 24px; padding: 0 20px; }
-  .providers__nav { padding: 0 20px; }
   .providers__track { padding-left: 20px; }
 }
