@@ -1,12 +1,13 @@
 import { act, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "./HomePage.jsx";
+import { TOTAL_SCROLL } from "../lib/scrollMap.js";
 
-// The scroll state machine (hero -> hijacked zone -> released native scroll)
-// drives every section's position on the page and has no other coverage, so
-// its transitions are pinned down here rather than left to manual scrolling.
+// scrollMap.test.js pins down the timeline arithmetic on its own. What's left to
+// cover here is the wiring: that a native scroll event reaches the page, lands
+// once per frame, and moves what it should.
 
-// Faking rAF alongside the timers lets the wheel batching below be advanced
+// Faking rAF alongside the timers lets the per-frame batching below be advanced
 // deterministically instead of waiting on real vsync.
 const FAKE = ["requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "clearTimeout", "Date"];
 
@@ -19,92 +20,153 @@ afterEach(() => vi.useRealTimers());
 
 function renderHome() {
   const { container, unmount } = render(<MemoryRouter><HomePage /></MemoryRouter>);
+  const home = () => screen.getByTestId("home");
   return {
     container,
     unmount,
-    stage: () => screen.getByTestId("home").getAttribute("data-stage"),
+    home,
+    heroExit: () => Number(home().style.getPropertyValue("--hero-exit")),
+    heroExited: () => home().getAttribute("data-hero-exited"),
     // The Providers carousel is what the first stretch of scrolling drives.
     track: () => container.querySelector(".providers__track").style.transform,
   };
 }
 
-// Deltas are batched into one requestAnimationFrame callback, so a tick only
-// lands once a frame has been allowed to run.
-function wheel(deltaY, times = 1) {
+// Scroll events are batched into one requestAnimationFrame callback, so a
+// position only lands once a frame has been allowed to run.
+function scrollTo(y, { events = 1 } = {}) {
   act(() => {
-    for (let i = 0; i < times; i++) {
-      window.dispatchEvent(new WheelEvent("wheel", { deltaY, bubbles: true, cancelable: true }));
+    window.scrollY = y;
+    for (let i = 0; i < events; i++) {
+      window.dispatchEvent(new Event("scroll"));
     }
     vi.advanceTimersByTime(20);
   });
 }
 
-const clearLock = () => act(() => { vi.advanceTimersByTime(1000); });
-
-test("starts on the hero with native scroll locked out", () => {
-  const { stage } = renderHome();
-  expect(stage()).toBe("0");
-  expect(document.body.style.overflow).toBe("hidden");
+test("starts on the hero, and never takes native scroll away from the browser", () => {
+  const { heroExit, heroExited } = renderHome();
+  expect(heroExit()).toBe(0);
+  expect(heroExited()).toBe("false");
+  expect(document.body.style.overflow).toBe("");
 });
 
-test("a wheel-down enters the hijacked scroll zone", () => {
-  const { stage } = renderHome();
-  wheel(50);
-  expect(stage()).toBe("1");
+test("the track is as tall as the scroll timeline it drives", () => {
+  const { container } = renderHome();
+  expect(container.querySelector(".home__track").style.height).toBe(`calc(${TOTAL_SCROLL}px + 100vh)`);
 });
 
-test("a burst of wheel events in one frame applies their sum, once", () => {
-  // 10 small events inside a single frame must land exactly where one event
-  // carrying the same total delta lands — that is what batching guarantees.
+test("scrolling drives the hero's exit, and hands off at the halfway point", () => {
+  const { heroExit, heroExited } = renderHome();
+
+  scrollTo(225);
+  expect(heroExit()).toBeCloseTo(0.25);
+  expect(heroExited()).toBe("false");
+
+  scrollTo(900);
+  expect(heroExit()).toBe(1);
+  expect(heroExited()).toBe("true");
+});
+
+// Resting halfway through the hero's dissolve isn't a state the page offers, so
+// a stopped scroll inside that segment settles to whichever end is nearer.
+// Nothing outside the segment may ever be touched.
+describe("the hero boundary settles once scrolling stops", () => {
+  const settle = () => act(() => { vi.advanceTimersByTime(200); });
+
+  test("a stop just past the start falls back to the hero", () => {
+    renderHome();
+    scrollTo(300);
+    settle();
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  });
+
+  test("a stop past halfway carries on to Providers", () => {
+    renderHome();
+    scrollTo(600);
+    settle();
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 900, behavior: "smooth" });
+  });
+
+  test("it waits for the scroll to stop rather than fighting it", () => {
+    renderHome();
+    scrollTo(300);
+    act(() => { vi.advanceTimersByTime(100); }); // still moving
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  test("it never touches a scroll outside the hero's segment", () => {
+    renderHome();
+    scrollTo(7000);
+    settle();
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+
+  test("it leaves both ends of the segment alone", () => {
+    renderHome();
+    scrollTo(0);
+    settle();
+    scrollTo(900);
+    settle();
+    expect(window.scrollTo).not.toHaveBeenCalled();
+  });
+});
+
+test("scrolling past the hero drives the Providers carousel", () => {
+  const { track } = renderHome();
+  const atRest = track();
+
+  scrollTo(1350); // halfway through Providers' horizontal sweep
+
+  expect(track()).not.toBe(atRest);
+});
+
+test("many scroll events in one frame land once, at the final position", () => {
+  // A burst of events inside a single frame must leave the page exactly where a
+  // single event for the same position leaves it — that is what batching buys.
   // Each page is torn down before the next renders: they both listen on
-  // `window`, so a live leftover would receive the other's wheel events too.
-  const measure = (deltaY, times) => {
+  // `window`, so a live leftover would receive the other's scroll events too.
+  const measure = (events) => {
     const home = renderHome();
-    wheel(50);
-    clearLock();
-    wheel(deltaY, times);
+    scrollTo(1350, { events });
     const at = home.track();
     home.unmount();
     return at;
   };
 
-  const burst = measure(45, 10);
-  const single = measure(450, 1);
-
-  expect(burst).toBe(single);
-  expect(burst).not.toBe("translate3d(0px,0,0)"); // it did move
+  expect(measure(10)).toBe(measure(1));
 });
 
-test("scrolling past the last stage releases into native scroll for CTA + Footer", () => {
-  const { stage } = renderHome();
-  wheel(50);
-  clearLock();
-  for (let i = 0; i < 200; i++) wheel(500);
+test("the far end of the track rests on the CTA", () => {
+  const { container } = renderHome();
+  scrollTo(TOTAL_SCROLL);
 
-  expect(stage()).toBe("2");
-  expect(document.body.style.overflow).toBe(""); // handed back to the browser
+  const cta = container.querySelector(".home__stage--cta");
+  expect(cta.getAttribute("aria-hidden")).toBe("false");
+  expect(cta.style.transform).toBe("translateY(0.000%)");
 });
 
-test("scrolling up at the top of the released area re-enters the hijack", () => {
-  const { stage } = renderHome();
-  wheel(50);
-  clearLock();
-  for (let i = 0; i < 200; i++) wheel(500);
-  expect(stage()).toBe("2");
+test("overscrolling past the end of the track changes nothing", () => {
+  const { container } = renderHome();
+  scrollTo(TOTAL_SCROLL);
+  const atEnd = container.querySelector(".home__stage--cta").style.transform;
 
-  window.scrollY = 0;
-  wheel(-500);
-  expect(stage()).toBe("1");
-  expect(document.body.style.overflow).toBe("hidden");
+  scrollTo(TOTAL_SCROLL + 5000);
+
+  expect(container.querySelector(".home__stage--cta").style.transform).toBe(atEnd);
 });
 
-test("Back to top from the footer returns to the hero", () => {
-  const { stage } = renderHome();
-  wheel(50);
-  clearLock();
-  for (let i = 0; i < 200; i++) wheel(500);
-  expect(stage()).toBe("2");
+test("the footer stays outside the track, on ordinary scroll", () => {
+  const { container } = renderHome();
+  expect(container.querySelector(".home__track .footer")).toBeNull();
+  expect(container.querySelector(".footer")).not.toBeNull();
+});
+
+test("Back to top from the footer scrolls the page home", () => {
+  renderHome();
+  scrollTo(TOTAL_SCROLL);
 
   act(() => { screen.getByRole("button", { name: /back to top/i }).click(); });
-  expect(stage()).toBe("0");
+
+  expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "instant" });
 });

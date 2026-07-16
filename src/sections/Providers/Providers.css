@@ -38,8 +38,10 @@
 }
 .providers__finalctaicon { width: 12px; height: 17px; transform: rotate(90deg); }
 
-/* --- Staged entrance (triggered when the site is at the Providers stage) ---
-   1) background blurs (HomePage.css)  2) text rises up  3) cards slide in R->L */
+/* --- Staged entrance (triggered once the hero hands off) ---
+   1) background blurs (HomePage.css)  2) text rises up  3) cards slide in R->L
+   This one stagger stays time-based rather than scroll-linked: it's a flourish
+   that plays on arrival, not something that should rewind under a scroll-up. */
 .providers__tag,
 .providers__title,
 .providers__lead,
@@ -49,17 +51,17 @@
 }
 .providers__enter { opacity: 0; transform: translateX(60px); }
 
-.home[data-stage="1"] .providers__tag,
-.home[data-stage="1"] .providers__title,
-.home[data-stage="1"] .providers__lead,
-.home[data-stage="1"] .providers__cta .cta-btn-wrap {
+.home[data-hero-exited="true"] .providers__tag,
+.home[data-hero-exited="true"] .providers__title,
+.home[data-hero-exited="true"] .providers__lead,
+.home[data-hero-exited="true"] .providers__cta .cta-btn-wrap {
   opacity: 1; transform: translateY(0);
 }
-.home[data-stage="1"] .providers__tag   { transition-delay: 0.45s; }
-.home[data-stage="1"] .providers__title { transition-delay: 0.52s; }
-.home[data-stage="1"] .providers__lead  { transition-delay: 0.52s; }
-.home[data-stage="1"] .providers__cta .cta-btn-wrap { transition-delay: 0.60s; }
-.home[data-stage="1"] .providers__enter { opacity: 1; transform: translateX(0); transition-delay: 0.75s; }
+.home[data-hero-exited="true"] .providers__tag   { transition-delay: 0.45s; }
+.home[data-hero-exited="true"] .providers__title { transition-delay: 0.52s; }
+.home[data-hero-exited="true"] .providers__lead  { transition-delay: 0.52s; }
+.home[data-hero-exited="true"] .providers__cta .cta-btn-wrap { transition-delay: 0.60s; }
+.home[data-hero-exited="true"] .providers__enter { opacity: 1; transform: translateX(0); transition-delay: 0.75s; }
 
 @media (prefers-reduced-motion: reduce) {
   .providers__tag, .providers__title, .providers__lead,

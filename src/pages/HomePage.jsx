@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import BackgroundVideo from "../sections/Hero/BackgroundVideo.jsx";
 import Hero from "../sections/Hero/Hero.jsx";
 import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
@@ -13,291 +13,86 @@ import FAQSection from "../sections/FAQ/FAQSection.jsx";
 import CTASection from "../sections/CTA/CTASection.jsx";
 import FooterSection from "../sections/Footer/FooterSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
+import { mapScroll, HERO_EXIT_PX, TOTAL_SCROLL } from "../lib/scrollMap.js";
 import "./HomePage.css";
 
-const LOCK_MS = 900; // debounce only for the hero <-> scroll-zone jump
-const ENTER_THRESHOLD = 6; // wheel/touch deadband before that jump fires
-const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers/Key Numbers/Selection Standard)
-const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
-const PROVIDERS_H_RANGE = 900; // accumulated px of scroll to sweep Providers' cards + closing CTA
-const GET_STARTED_H_RANGE = 1200; // accumulated px of scroll to sweep the 3 Get Started steps
-const WHY_LEVELS_H_RANGE = 1800; // accumulated px of scroll to sweep the 3 Why Levels Socials cards
-const PROVIDERS_STAGE = 0; // Providers' index — also has a horizontal sub-phase
-const SELECTION_STAGE = 2; // Selection Standard's index — the other stage with a horizontal sub-phase
-const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last Explore Platform card
-const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
-const WHY_LEVELS_STAGE = 9; // "Why Levels Socials" cards — right after Get Started; also has a horizontal sub-phase
-const TESTIMONIALS_STAGE = 10; // "Trust & Transparency" testimonial carousel — right after Why Levels Socials; navigated by its own arrow buttons, not scroll
-const FAQ_STAGE = 11; // "Frequently Asked Questions" — right after Testimonials; category tabs + accordion, no scroll sub-phase
-const V_MAX = 11; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials, 10 Testimonials, 11 FAQ
+const HOW_IT_WORKS_STAGE = 7;
+const GET_STARTED_STAGE = 8;
+const WHY_LEVELS_STAGE = 9;
+const TESTIMONIALS_STAGE = 10;
+const FAQ_STAGE = 11;
+const CTA_STAGE = 12;
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
 const rel = (p, stageIndex) => Math.min(1, Math.max(-1, p - stageIndex));
 
+// Past this much of the hero's exit, the sections beneath it own the page: they
+// take the clicks and the screen readers, and the hero stops answering both.
+const HERO_HANDOFF = 0.5;
+
+// How long the page must sit still before we call a scroll finished. Long enough
+// to sit out trackpad momentum, short enough not to feel like a delay.
+const SETTLE_MS = 140;
+
 export default function HomePage() {
-  const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal), 2 = released (native scroll, CTA + Footer)
-  const [vScroll, setVScroll] = useState(0); // 0..2, continuous position across Providers/Key Numbers/Selection Standard
-  const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
-  const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
-  const [hScrollGetStarted, setHScrollGetStarted] = useState(0); // 0..1, horizontal position inside Get Started
-  const [hScrollWhyLevels, setHScrollWhyLevels] = useState(0); // 0..1, horizontal position inside Why Levels Socials
-  const stageRef = useRef(0);
-  const vRef = useRef(0);
-  const hRef = useRef(0);
-  const hProvidersRef = useRef(0);
-  const hGetStartedRef = useRef(0);
-  const hWhyLevelsRef = useRef(0);
-  const lockedRef = useRef(false);
+  const [scroll, setScroll] = useState(() => mapScroll(0));
 
-  useEffect(() => { stageRef.current = stage; }, [stage]);
-  useEffect(() => { vRef.current = vScroll; }, [vScroll]);
-  useEffect(() => { hRef.current = hScroll; }, [hScroll]);
-  useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
-  useEffect(() => { hGetStartedRef.current = hScrollGetStarted; }, [hScrollGetStarted]);
-  useEffect(() => { hWhyLevelsRef.current = hScrollWhyLevels; }, [hScrollWhyLevels]);
-
-  // Native scroll stays locked out (body overflow hidden) for the entire
-  // hijacked zone (stages 0/1) so the browser can't sneak past it via
-  // scrollbar drag or keyboard — only stage 2 (released, CTA + Footer) gets
-  // real document scroll.
+  // The browser scrolls; we only read where it got to. Scroll events fire far
+  // more often than the screen repaints, so coalesce them into one update per
+  // frame — same position, a fraction of the renders.
   useEffect(() => {
-    document.body.style.overflow = stage === 2 ? "" : "hidden";
-    return () => { document.body.style.overflow = ""; };
-  }, [stage]);
+    let rafId = 0;
+    const update = () => {
+      rafId = 0;
+      setScroll(mapScroll(window.scrollY));
+    };
+    const onScroll = () => {
+      if (!rafId) rafId = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    update(); // a reload can restore a scroll position; start from wherever we are
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
-  // Footer's "Back to top" resets every stage back to its start.
-  // useCallback keeps the reference stable so the memoized Footer below
-  // doesn't re-render on every scroll tick.
+  // The hero's dissolve should read as one decisive step, not somewhere you can
+  // park halfway. CSS scroll-snap cannot express that here, as measured in
+  // Chrome: `proximity` never engages over a segment this long, so the page just
+  // rests mid-dissolve; and `mandatory` considers the whole 17000px track
+  // snappable and yanks a scroll at 7000 back to the hero boundary at 900.
+  //
+  // So settle this one boundary by hand, and only once the scroll has actually
+  // stopped — unlike the old wheel lock, this never fights momentum, it waits
+  // for it. Every other pixel of the page is left entirely to the browser.
+  useEffect(() => {
+    let timer = 0;
+    const settle = () => {
+      const y = window.scrollY;
+      if (y <= 0 || y >= HERO_EXIT_PX) return; // outside the hero's segment: not ours to touch
+      window.scrollTo({ top: y < HERO_EXIT_PX / 2 ? 0 : HERO_EXIT_PX, behavior: "smooth" });
+    };
+    const onScroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(settle, SETTLE_MS);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Footer's "Back to top". useCallback keeps the reference stable so the
+  // memoized Footer doesn't re-render on every scroll tick.
   const resetToHero = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0; hWhyLevelsRef.current = 0;
-    setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0); setHScrollWhyLevels(0);
-    setStage(0);
   }, []);
 
-  useEffect(() => {
-    // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
-    // gesture can't skip past it). Once inside the zone, sections never fade
-    // or disappear — they just move, continuously, by the exact amount
-    // scrolled, like a normal page: no locking, no snapping. Once fully
-    // scrolled into Selection Standard (vScroll === 2), further scroll drives
-    // its internal horizontal slides instead of scrolling further down.
-    const enterZone = () => {
-      lockedRef.current = true;
-      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0; hWhyLevelsRef.current = 0;
-      setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0); setHScrollWhyLevels(0);
-      setStage(1);
-      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
-    };
-    const leaveZone = () => {
-      lockedRef.current = true;
-      setStage(0);
-      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
-    };
-
-    // Past the last hijacked stage (FAQ), scrolling further down hands off to
-    // the browser's native scroll for CTA + Footer — same discrete pinned
-    // jump as hero -> scroll-zone, just at the other end.
-    const releaseScroll = () => {
-      lockedRef.current = true;
-      setStage(2);
-      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
-    };
-    // Scrolling up from the very top of the released (native-scroll) content
-    // re-enters the hijacked zone — no lock/debounce here (unlike the other
-    // jumps above), and the same wheel tick's delta is applied immediately
-    // to vScroll, so this reads as one continuous scroll back through
-    // FAQ -> Testimonials -> ... rather than a separate, jarring step.
-    const reEnterZone = (dy) => {
-      setStage(1);
-      const nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
-      vRef.current = nextV;
-      setVScroll(nextV);
-    };
-
-    const applyDelta = (dy) => {
-      if (stageRef.current === 0) {
-        if (lockedRef.current) return;
-        if (dy > ENTER_THRESHOLD) enterZone();
-        return;
-      }
-      if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && dy < 0) reEnterZone(dy);
-        return;
-      }
-      // Ignore the trailing momentum of the gesture that just entered the
-      // zone, so the next section only starts moving on a distinct, later
-      // scroll — not as a continuation of the same fling that revealed it.
-      if (lockedRef.current) return;
-
-      // Why Levels Socials has its own horizontal sub-phase (the 3 cards),
-      // mirroring Providers' below. Now that Testimonials sits past it at
-      // V_MAX, an ordinary scroll delta could step clean over
-      // WHY_LEVELS_STAGE — the vertical-snap guard below handles that the
-      // same way it already does for SELECTION_STAGE and GET_STARTED_STAGE.
-      const inWhyLevelsHorizontalPhase =
-        vRef.current === WHY_LEVELS_STAGE &&
-        (hWhyLevelsRef.current > 0 || dy > 0) &&
-        (dy < 0 || hWhyLevelsRef.current < 1);
-      if (inWhyLevelsHorizontalPhase) {
-        const nextH = Math.min(1, Math.max(0, hWhyLevelsRef.current + dy / WHY_LEVELS_H_RANGE));
-        if (nextH === hWhyLevelsRef.current) return;
-        hWhyLevelsRef.current = nextH;
-        setHScrollWhyLevels(nextH);
-        return;
-      }
-
-      // Get Started has its own horizontal sub-phase (the 3-step circle),
-      // the same shape as Selection Standard's below. Now that Why Levels
-      // Socials sits past it at V_MAX, an ordinary scroll delta could step
-      // clean over GET_STARTED_STAGE — the vertical-snap guard below handles
-      // that the same way it already does for SELECTION_STAGE.
-      const inGetStartedHorizontalPhase =
-        vRef.current === GET_STARTED_STAGE &&
-        (hGetStartedRef.current > 0 || dy > 0) &&
-        (dy < 0 || hGetStartedRef.current < 1);
-      if (inGetStartedHorizontalPhase) {
-        const nextH = Math.min(1, Math.max(0, hGetStartedRef.current + dy / GET_STARTED_H_RANGE));
-        if (nextH === hGetStartedRef.current) return;
-        hGetStartedRef.current = nextH;
-        setHScrollGetStarted(nextH);
-        return;
-      }
-
-      // Providers has its own horizontal sub-phase (cards + closing CTA), the
-      // same shape as Selection Standard's below. Since Providers sits at
-      // V_MIN (0), it can never be overshot from below, so — unlike Selection
-      // Standard — it needs no extra vertical-snap guard.
-      const inProvidersHorizontalPhase =
-        vRef.current === PROVIDERS_STAGE &&
-        (hProvidersRef.current > 0 || dy > 0) &&
-        (dy < 0 || hProvidersRef.current < 1);
-      if (inProvidersHorizontalPhase) {
-        const nextH = Math.min(1, Math.max(0, hProvidersRef.current + dy / PROVIDERS_H_RANGE));
-        if (nextH === hProvidersRef.current) return;
-        hProvidersRef.current = nextH;
-        setHScrollProviders(nextH);
-        return;
-      }
-
-      // Horizontal phase only applies to Selection Standard itself; once its
-      // slides are fully swept (hRef === 1), forward scroll falls through to
-      // the normal vertical branch below and continues into Explore Platform.
-      const inHorizontalPhase =
-        vRef.current === SELECTION_STAGE &&
-        (hRef.current > 0 || dy > 0) &&
-        (dy < 0 || hRef.current < 1);
-      if (inHorizontalPhase) {
-        // Horizontal phase: scrolling further down sweeps Selection Standard's
-        // slides; scrolling up drains it back to 0 before handing control
-        // back to the vertical scroll above.
-        const nextH = Math.min(1, Math.max(0, hRef.current + dy / H_RANGE));
-        if (nextH === hRef.current) return;
-        hRef.current = nextH;
-        setHScroll(nextH);
-        return;
-      }
-
-      let nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
-
-      // SELECTION_STAGE used to double as V_MAX, so the vertical clamp above
-      // guaranteed vRef landed exactly on it before Explore Platform existed.
-      // Now that V_MAX is well past it, an ordinary scroll delta can step
-      // clean over SELECTION_STAGE without ever equaling it, and
-      // inHorizontalPhase's exact-equality check above would never fire.
-      // Snap to it instead of overshooting, in either direction, whenever
-      // that direction's horizontal sweep hasn't finished yet — the leftover
-      // delta is dropped for this tick, same as the old hard ceiling did.
-      if (dy > 0 && vRef.current < SELECTION_STAGE && nextV > SELECTION_STAGE && hRef.current < 1) {
-        nextV = SELECTION_STAGE;
-      } else if (dy < 0 && vRef.current > SELECTION_STAGE && nextV < SELECTION_STAGE && hRef.current > 0) {
-        nextV = SELECTION_STAGE;
-      }
-
-      // Same snap, for GET_STARTED_STAGE now that Why Levels Socials sits
-      // past it — see the comment above inGetStartedHorizontalPhase.
-      if (dy > 0 && vRef.current < GET_STARTED_STAGE && nextV > GET_STARTED_STAGE && hGetStartedRef.current < 1) {
-        nextV = GET_STARTED_STAGE;
-      } else if (dy < 0 && vRef.current > GET_STARTED_STAGE && nextV < GET_STARTED_STAGE && hGetStartedRef.current > 0) {
-        nextV = GET_STARTED_STAGE;
-      }
-
-      // Same snap, for WHY_LEVELS_STAGE now that Testimonials sits past it —
-      // see the comment above inWhyLevelsHorizontalPhase.
-      if (dy > 0 && vRef.current < WHY_LEVELS_STAGE && nextV > WHY_LEVELS_STAGE && hWhyLevelsRef.current < 1) {
-        nextV = WHY_LEVELS_STAGE;
-      } else if (dy < 0 && vRef.current > WHY_LEVELS_STAGE && nextV < WHY_LEVELS_STAGE && hWhyLevelsRef.current > 0) {
-        nextV = WHY_LEVELS_STAGE;
-      }
-
-      if (nextV === vRef.current) {
-        if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
-        else if (nextV === V_MAX && dy > ENTER_THRESHOLD && !lockedRef.current) releaseScroll();
-        return;
-      }
-      vRef.current = nextV;
-      setVScroll(nextV);
-    };
-
-    // Input events fire much faster than the screen repaints — a trackpad
-    // emits ~120 wheel events/sec, and each one used to drive its own state
-    // update and re-render, well over half of which the user never saw as a
-    // painted frame. Accumulate the deltas and flush them once per animation
-    // frame instead: same total movement, at most one update per frame.
-    let pending = 0;
-    let rafId = 0;
-    const flush = () => {
-      rafId = 0;
-      const dy = pending;
-      pending = 0;
-      if (dy !== 0) applyDelta(dy);
-    };
-    const queueDelta = (dy) => {
-      pending += dy;
-      if (!rafId) rafId = requestAnimationFrame(flush);
-    };
-
-    const onWheel = (e) => {
-      if (e.deltaY === 0) return;
-      // Stage 2 is native document scroll — only intercept scrolling up at
-      // the very top (re-enters the hijack); every other tick here is left
-      // alone for the browser to handle.
-      if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && e.deltaY < 0) {
-          e.preventDefault();
-          queueDelta(e.deltaY);
-        }
-        return;
-      }
-      e.preventDefault();
-      queueDelta(e.deltaY);
-    };
-
-    let touchY = null;
-    const onTouchStart = (e) => { touchY = e.touches[0].clientY; };
-    const onTouchMove = (e) => {
-      if (touchY == null) return;
-      const y = e.touches[0].clientY;
-      const dy = touchY - y;
-      touchY = y;
-      if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && dy < 0) queueDelta(dy * 2.2);
-        return;
-      }
-      queueDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
-    };
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-    };
-  }, []);
+  const { heroExit, vScroll, hProviders, hSelection, hGetStarted, hWhyLevels } = scroll;
+  const heroExited = heroExit > HERO_HANDOFF;
 
   const knActive = rel(vScroll, 1) > -0.88 && vScroll < 1.9;
   const selectionActive = vScroll > 1.5;
@@ -319,108 +114,124 @@ export default function HomePage() {
   const testimonialsActive = vScroll > TESTIMONIALS_STAGE - 0.5;
   const faqRel = rel(vScroll, FAQ_STAGE);
   const faqActive = vScroll > FAQ_STAGE - 0.5;
+  const ctaRel = rel(vScroll, CTA_STAGE);
 
   return (
-    <>
     <main
       className="home"
       data-testid="home"
-      data-stage={stage}
+      data-hero-exited={heroExited ? "true" : "false"}
       data-kn-active={knActive ? "true" : "false"}
+      style={{ "--hero-exit": heroExit.toFixed(4) }}
     >
-      {/* Video + overlay move together with Providers (same translateY) instead
-          of staying pinned while its content scrolls away underneath it. */}
-      <div
-        className="home__bg"
-        style={{ transform: `translateY(${(-bgRel * 100).toFixed(3)}%)` }}
-      >
-        <BackgroundVideo blurred={stage === 1} />
-        <div className="home__overlay" />
-      </div>
+      {/* The track's height IS the scroll timeline, so it comes from the same
+          constant the timeline is built from rather than a duplicate in CSS.
+          The sticky viewport stays pinned for (height - 100vh) of scroll. */}
+      <div className="home__track" style={{ height: `calc(${TOTAL_SCROLL}px + 100vh)` }}>
+        <div className="home__viewport">
+          {/* Video + overlay move together with Providers (same translateY)
+              instead of staying pinned while its content scrolls away. */}
+          <div
+            className="home__bg"
+            style={{ transform: `translateY(${(-bgRel * 100).toFixed(3)}%)` }}
+          >
+            <BackgroundVideo blurred={heroExited} />
+            <div className="home__overlay" />
+          </div>
 
-      <div className="home__stage home__stage--hero" aria-hidden={stage !== 0}>
-        <Hero />
-      </div>
+          <div className="home__stage home__stage--hero" aria-hidden={heroExited}>
+            <Hero />
+          </div>
 
-      <div
-        className="home__stage home__stage--providers"
-        style={{ transform: `translateY(${(-providersRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || providersRel >= 1}
-      >
-        <ProvidersSection progress={hScrollProviders} />
-      </div>
+          <div
+            className="home__stage home__stage--providers"
+            style={{ transform: `translateY(${(-providersRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || providersRel >= 1}
+          >
+            <ProvidersSection progress={hProviders} />
+          </div>
 
-      <div
-        className="home__stage home__stage--keynumbers"
-        style={{ transform: `translateY(${(-keynumbersRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || Math.abs(keynumbersRel) >= 1}
-      >
-        <KeyNumbersSection />
-      </div>
+          <div
+            className="home__stage home__stage--keynumbers"
+            style={{ transform: `translateY(${(-keynumbersRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || Math.abs(keynumbersRel) >= 1}
+          >
+            <KeyNumbersSection />
+          </div>
 
-      <div
-        className="home__stage home__stage--selection"
-        style={{ transform: `translateY(${(-selectionRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || selectionRel >= 1}
-      >
-        <SelectionStandardSection active={selectionActive} progress={hScroll} />
-      </div>
+          <div
+            className="home__stage home__stage--selection"
+            style={{ transform: `translateY(${(-selectionRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || selectionRel >= 1}
+          >
+            <SelectionStandardSection active={selectionActive} progress={hSelection} />
+          </div>
 
-      {explorePlatformStages.map(({ stageIndex, slide, rel: stageRel, active }) => (
-        <div
-          key={slide.id}
-          className="home__stage home__stage--explore"
-          style={{ zIndex: 6 + (stageIndex - 3), transform: `translateY(${(-stageRel * 100).toFixed(3)}%)` }}
-          aria-hidden={stage === 0 || Math.abs(stageRel) >= 1}
-        >
-          <ExplorePlatformSlide slide={slide} active={active} />
+          {explorePlatformStages.map(({ stageIndex, slide, rel: stageRel, active }) => (
+            <div
+              key={slide.id}
+              className="home__stage home__stage--explore"
+              style={{ zIndex: 6 + (stageIndex - 3), transform: `translateY(${(-stageRel * 100).toFixed(3)}%)` }}
+              aria-hidden={!heroExited || Math.abs(stageRel) >= 1}
+            >
+              <ExplorePlatformSlide slide={slide} active={active} />
+            </div>
+          ))}
+
+          <div
+            className="home__stage home__stage--howitworks"
+            style={{ zIndex: 10, transform: `translateY(${(-howItWorksRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || howItWorksRel >= 1}
+          >
+            <HowItWorksSection />
+          </div>
+
+          <div
+            className="home__stage home__stage--howitworks"
+            style={{ zIndex: 11, transform: `translateY(${(-getStartedRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || getStartedRel >= 1}
+          >
+            <GetStartedSection progress={hGetStarted} />
+          </div>
+
+          <div
+            className="home__stage home__stage--whylevels"
+            style={{ zIndex: 12, transform: `translateY(${(-whyLevelsRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || whyLevelsRel >= 1}
+          >
+            <WhyLevelsSocialsSection progress={hWhyLevels} active={whyLevelsActive} />
+          </div>
+
+          <div
+            className="home__stage home__stage--testimonials"
+            style={{ zIndex: 13, transform: `translateY(${(-testimonialsRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || testimonialsRel >= 1}
+          >
+            <TestimonialsSection active={testimonialsActive} />
+          </div>
+
+          <div
+            className="home__stage home__stage--faq"
+            style={{ zIndex: 14, transform: `translateY(${(-faqRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || faqRel >= 1}
+          >
+            <FAQSection active={faqActive} />
+          </div>
+
+          <div
+            className="home__stage home__stage--cta"
+            style={{ zIndex: 15, transform: `translateY(${(-ctaRel * 100).toFixed(3)}%)` }}
+            aria-hidden={!heroExited || ctaRel >= 1}
+          >
+            <CTASection />
+          </div>
         </div>
-      ))}
-
-      <div
-        className="home__stage home__stage--howitworks"
-        style={{ zIndex: 10, transform: `translateY(${(-howItWorksRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || howItWorksRel >= 1}
-      >
-        <HowItWorksSection />
       </div>
 
-      <div
-        className="home__stage home__stage--howitworks"
-        style={{ zIndex: 11, transform: `translateY(${(-getStartedRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || getStartedRel >= 1}
-      >
-        <GetStartedSection progress={hScrollGetStarted} />
-      </div>
-
-      <div
-        className="home__stage home__stage--whylevels"
-        style={{ zIndex: 12, transform: `translateY(${(-whyLevelsRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || whyLevelsRel >= 1}
-      >
-        <WhyLevelsSocialsSection progress={hScrollWhyLevels} active={whyLevelsActive} />
-      </div>
-
-      <div
-        className="home__stage home__stage--testimonials"
-        style={{ zIndex: 13, transform: `translateY(${(-testimonialsRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || testimonialsRel >= 1}
-      >
-        <TestimonialsSection active={testimonialsActive} />
-      </div>
-
-      <div
-        className="home__stage home__stage--faq"
-        style={{ zIndex: 14, transform: `translateY(${(-faqRel * 100).toFixed(3)}%)` }}
-        aria-hidden={stage === 0 || faqRel >= 1}
-      >
-        <FAQSection active={faqActive} />
-      </div>
-    </main>
-    <div className="released" data-released={stage === 2 ? "true" : "false"}>
-      <CTASection />
+      {/* Past the track the viewport unsticks and the footer arrives on ordinary
+          scroll. It stays out of the track deliberately: a stage is a layer
+          exactly one screen tall, and the footer is taller than that. */}
       <FooterSection onBackToTop={resetToHero} />
-    </div>
-    </>
+    </main>
   );
 }

@@ -48,7 +48,7 @@ Rejected alternatives:
 
 | Question | Decision |
 |---|---|
-| Hero → Providers | CSS `scroll-snap` at the boundary; choreography scroll-linked within the hero's segment |
+| Hero → Providers | A discrete step at the boundary; choreography scroll-linked within the hero's segment. Planned as CSS `scroll-snap` — see "Hero boundary" below for why that had to change |
 | Scrollbar (~17 000px document) | Hidden (`scrollbar-width: none`); scroll stays fully native |
 | Feel fidelity | Keep all distances exactly; accept real browser inertia |
 | CTA | Becomes stage 12 inside the track — measured 600px, fits a viewport, gets the same reveal as every other section |
@@ -99,6 +99,29 @@ Stage indices are unchanged, with one addition: 0 Providers, 1 Key Numbers,
 9 Why Levels, 10 Testimonials, 11 FAQ, **12 CTA**.
 
 The snap guards disappear: ranges are explicit, so nothing can step over a stage.
+
+## Hero boundary: CSS scroll-snap doesn't work here
+
+Planned as CSS `scroll-snap`. Measured in Chrome against the real track, it fails
+at both strictnesses:
+
+- **`proximity`** never engages over the hero's 900px segment. A scroll stopping
+  at 300 stays at 300, leaving the hero parked half-dissolved — a state the
+  design does not offer. (The snap markers themselves are valid: switching to
+  `mandatory` snaps them correctly, which is how they were ruled out as the
+  cause.)
+- **`mandatory`** treats the whole 17 000px track as snappable, since the only
+  snap points are at 0 and 900. A scroll to 7 000 is dragged back to 900. The
+  page becomes unusable.
+
+There is no third strictness, and the proximity threshold is browser-controlled.
+So this one boundary is settled in JS instead: after the scroll stops
+(`SETTLE_MS` of quiet), a position inside `(0, HERO_EXIT_PX)` is sent to
+whichever end is nearer.
+
+This is deliberately not the old wheel lock. It never fights momentum — it waits
+for it — it holds no mode, no lock flag and no refs, and it touches nothing
+outside the hero's segment. Everything else stays the browser's.
 
 ## Hero choreography
 
@@ -170,9 +193,9 @@ on mobile.
 - **iOS Safari throttles `scroll` during momentum**, so animations *inside* the
   pinned viewport may lag the finger. The pinning itself stays smooth — the
   browser does it, not us.
-- **`scroll-snap: proximity` on a long track** may fight the scroll and drag it
-  back. Must be verified against real scrolling. Fallback: drop snap and let the
-  hero exit continuously.
+- ~~**`scroll-snap: proximity` on a long track** may fight the scroll~~ —
+  confirmed, and worse than expected. See "Hero boundary" above: CSS snap is out
+  entirely, the boundary is settled in JS.
 - **Scroll restoration changes behaviour**: the browser will now restore position
   on reload, where F5 previously always returned to the hero. This is ordinary web
   behaviour and is accepted.

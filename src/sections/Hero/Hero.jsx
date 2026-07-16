@@ -32,8 +32,8 @@ export default function Hero() {
 
   return (
     <section className="hero">
-      {/* Only the menu slides up on exit (CSS, driven by the parent data-stage);
-          the rest fades + blurs with the stage. */}
+      {/* Only the menu slides up on exit (CSS, driven by the parent's
+          --hero-exit); the rest fades + blurs across the same range. */}
       <div className="hero-headerwrap">
         <Header />
       </div>
