@@ -49,11 +49,13 @@ html::-webkit-scrollbar { display: none; }
   background: linear-gradient(180deg, rgba(20,14,10,0.35) 0%, rgba(20,14,10,0.25) 100%);
 }
 
-/* NOTE: NEVER put `filter`/`will-change:filter` on `.home__stage--hero`. It
-   contains the glass header (nav pill + Create Account), and ANY non-`none`
-   filter on an ancestor breaks their `backdrop-filter`. The exit blur therefore
-   lives on the hero *content* only (see below), never on this wrapper.
-   Opacity is safe. */
+/* NOTE: NEVER put `filter`/`will-change:filter`/`opacity` below 1 on
+   `.home__stage--hero`. It contains the glass header (nav pill + Create
+   Account), and any of those on an ancestor makes it a backdrop root: the glass
+   then blurs that empty layer instead of the video behind the page, so the blur
+   vanishes the moment a scroll starts. The exit blur and the exit fade both
+   live on the hero's own children instead (see below), never on this wrapper.
+   An element's own opacity is fine — it only fades what it already blurred. */
 /* No opacity transition: opacity is scroll-linked through --hero-exit, and a
    transition would lag a frame behind every scroll tick instead of tracking it. */
 .home__stage { position: absolute; inset: 0; pointer-events: none; }
@@ -62,7 +64,7 @@ html::-webkit-scrollbar { display: none; }
    in over the second — the same staggered cross-fade the old 0.35s
    transition-delay produced, now driven by scroll instead of by a timer.
    Out-of-range opacity clamps to 0..1 on its own. */
-.home__stage--hero { z-index: 2; opacity: calc(1 - var(--hero-exit) * 2); }
+.home__stage--hero { z-index: 2; --hero-fade: calc(1 - var(--hero-exit) * 2); }
 .home__stage--providers { z-index: 3; }
 .home__stage--keynumbers { z-index: 4; }
 .home__stage--selection { z-index: 5; }
@@ -75,13 +77,33 @@ html::-webkit-scrollbar { display: none; }
    stand on its own 800px min-height the way it would in normal flow. */
 .home__stage--cta .cta { height: 100%; min-height: 0; }
 
-/* The "blur out" effect is applied to the non-glass hero content only, so the
-   glass header keeps a working backdrop-filter through the whole transition. */
+/* The exit fade is dealt out to the hero's own children rather than to the
+   stage that holds them, so that no glass element ever sits under a faded
+   ancestor. The "blur out" is applied to the non-glass content only, for the
+   same reason — the glass header keeps a working backdrop-filter throughout. */
 .hero-title, .hero-cta, .hero-explore {
+  opacity: var(--hero-fade, 1);
   filter: blur(calc(var(--hero-exit) * 18px));
 }
+.cursor-trail { opacity: var(--hero-fade, 1); }
 
-/* Only the menu slides up on exit; the rest just fades + blurs */
+/* The header's leaves fade one by one — .hero-headerwrap itself must stay fully
+   opaque, since the pill and Create Account blur through it. The dropdown is
+   left out: framer-motion owns its inline opacity, and it rides the header up
+   and off the screen well before the fade would have finished. */
+.hero-logo, .nav-login, .nav-pill, .btn--account {
+  opacity: var(--hero-fade, 1);
+}
+/* Create Account dims on hover (.btn:hover) off the same opacity the fade now
+   uses, so the two have to be spelled out together — otherwise the more
+   specific hover rule pins the button opaque mid-fade. */
+.hero-headerwrap .nav-actions .btn--account:hover {
+  opacity: calc(var(--hero-fade, 1) * 0.92);
+}
+
+/* Only the menu slides up on exit; the rest just fades + blurs.
+   A transform on an ancestor is safe — unlike opacity, it doesn't isolate the
+   backdrop, so the glass below still blurs the video while it travels. */
 .hero-headerwrap { transform: translateY(calc(var(--hero-exit) * -180px)); }
 
 @media (prefers-reduced-motion: reduce) {
