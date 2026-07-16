@@ -417,8 +417,10 @@ export default function HomePage() {
         <FAQSection active={faqActive} />
       </div>
     </main>
-    <CTASection />
-    <FooterSection onBackToTop={resetToHero} />
+    <div className="released" data-released={stage === 2 ? "true" : "false"}>
+      <CTASection />
+      <FooterSection onBackToTop={resetToHero} />
+    </div>
     </>
   );
 }

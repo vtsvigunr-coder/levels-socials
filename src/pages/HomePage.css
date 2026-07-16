@@ -6,11 +6,25 @@
    after it for the stage-2 release below) — without it, browsers are
    inconsistent about whether a fixed z-index:auto element paints above or
    below later in-flow static siblings, and it can lose that fight. */
-.home { position: fixed; inset: 0; overflow: hidden; z-index: 20; }
+/* Opaque background is load-bearing, not cosmetic: `.home` is fixed (out of
+   flow), so its CTA/Footer siblings start at document y=0 — directly behind
+   it — and the only thing covering them is the video, which paints on its own
+   compositor layer. Whenever that layer isn't there (poster/video not yet
+   decoded on load, or a macOS window-minimize snapshot, which omits video
+   layers), the CTA bled through the merely-translucent .home__overlay. */
+.home { position: fixed; inset: 0; overflow: hidden; z-index: 20; background: #0b0b0b; }
 /* Stage 2 releases the hijack: FAQ (the last stage, already at rel=0) stays
    put as one viewport-tall block, and native document scroll takes over
    below it to reveal CTA + Footer, which sit right after `.home` in flow. */
 .home[data-stage="2"] { position: relative; inset: auto; min-height: 100vh; overflow: visible; z-index: auto; }
+
+/* Until that release, CTA + Footer have nothing to sit below (`.home` is
+   fixed) and no way to be reached (body overflow is hidden), so they're only
+   ever an invisible layer stacked under the hero. Keep them out of the render
+   entirely rather than relying on `.home` to cover them — one less thing that
+   has to win a paint/stacking fight on every frame. */
+.released { display: none; }
+.released[data-released="true"] { display: block; }
 
 /* Wrapper carries the scroll-driven position (inline transform, no
    transition — same 1:1 tracking as the Providers stage it's paired with).
