@@ -5,6 +5,8 @@ import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
 import KeyNumbersSection from "../sections/KeyNumbers/KeyNumbersSection.jsx";
 import SelectionStandardSection from "../sections/SelectionStandard/SelectionStandardSection.jsx";
 import ExplorePlatformSlide from "../sections/ExplorePlatform/ExplorePlatformSlide.jsx";
+import HowItWorksSection from "../sections/HowItWorks/HowItWorksSection.jsx";
+import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -13,9 +15,12 @@ const ENTER_THRESHOLD = 6; // wheel/touch deadband before that jump fires
 const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers/Key Numbers/Selection Standard)
 const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
 const PROVIDERS_H_RANGE = 900; // accumulated px of scroll to sweep Providers' cards + closing CTA
+const GET_STARTED_H_RANGE = 1200; // accumulated px of scroll to sweep the 3 Get Started steps
 const PROVIDERS_STAGE = 0; // Providers' index — also has a horizontal sub-phase
 const SELECTION_STAGE = 2; // Selection Standard's index — the other stage with a horizontal sub-phase
-const V_MAX = 6; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards
+const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last Explore Platform card
+const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
+const V_MAX = 8; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -26,16 +31,19 @@ export default function HomePage() {
   const [vScroll, setVScroll] = useState(0); // 0..2, continuous position across Providers/Key Numbers/Selection Standard
   const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
   const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
+  const [hScrollGetStarted, setHScrollGetStarted] = useState(0); // 0..1, horizontal position inside Get Started
   const stageRef = useRef(0);
   const vRef = useRef(0);
   const hRef = useRef(0);
   const hProvidersRef = useRef(0);
+  const hGetStartedRef = useRef(0);
   const lockedRef = useRef(false);
 
   useEffect(() => { stageRef.current = stage; }, [stage]);
   useEffect(() => { vRef.current = vScroll; }, [vScroll]);
   useEffect(() => { hRef.current = hScroll; }, [hScroll]);
   useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
+  useEffect(() => { hGetStartedRef.current = hScrollGetStarted; }, [hScrollGetStarted]);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -46,8 +54,8 @@ export default function HomePage() {
     // its internal horizontal slides instead of scrolling further down.
     const enterZone = () => {
       lockedRef.current = true;
-      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0;
-      setVScroll(0); setHScroll(0); setHScrollProviders(0);
+      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0;
+      setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0);
       setStage(1);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
@@ -67,6 +75,22 @@ export default function HomePage() {
       // zone, so the next section only starts moving on a distinct, later
       // scroll — not as a continuation of the same fling that revealed it.
       if (lockedRef.current) return;
+
+      // Get Started has its own horizontal sub-phase (the 3-step circle),
+      // mirroring Providers' below. Since it sits at V_MAX (the last stage),
+      // it can never be overshot from above, so it needs no vertical-snap
+      // guard either.
+      const inGetStartedHorizontalPhase =
+        vRef.current === GET_STARTED_STAGE &&
+        (hGetStartedRef.current > 0 || dy > 0) &&
+        (dy < 0 || hGetStartedRef.current < 1);
+      if (inGetStartedHorizontalPhase) {
+        const nextH = Math.min(1, Math.max(0, hGetStartedRef.current + dy / GET_STARTED_H_RANGE));
+        if (nextH === hGetStartedRef.current) return;
+        hGetStartedRef.current = nextH;
+        setHScrollGetStarted(nextH);
+        return;
+      }
 
       // Providers has its own horizontal sub-phase (cards + closing CTA), the
       // same shape as Selection Standard's below. Since Providers sits at
@@ -164,6 +188,8 @@ export default function HomePage() {
     rel: rel(vScroll, stageIndex),
     active: vScroll > stageIndex - 0.5,
   }));
+  const howItWorksRel = rel(vScroll, HOW_IT_WORKS_STAGE);
+  const getStartedRel = rel(vScroll, GET_STARTED_STAGE);
 
   return (
     <main
@@ -220,6 +246,22 @@ export default function HomePage() {
           <ExplorePlatformSlide slide={slide} active={active} />
         </div>
       ))}
+
+      <div
+        className="home__stage home__stage--howitworks"
+        style={{ zIndex: 10, transform: `translateY(${(-howItWorksRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || howItWorksRel >= 1}
+      >
+        <HowItWorksSection />
+      </div>
+
+      <div
+        className="home__stage home__stage--howitworks"
+        style={{ zIndex: 11, transform: `translateY(${(-getStartedRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || getStartedRel >= 1}
+      >
+        <GetStartedSection progress={hScrollGetStarted} />
+      </div>
     </main>
   );
 }
