@@ -1,24 +1,37 @@
-/* Hero <-> scroll-zone is a discrete pinned jump. Inside the zone, Providers
-   and Key Numbers never fade or disappear: they're both always fully opaque
-   and simply move (inline transform driven by scroll amount in HomePage.jsx),
-   like a normal page scroll. The page itself never scrolls natively. */
-/* z-index pins this above CTA/Footer (its normal-flow siblings, appended
-   after it for the stage-2 release below) — without it, browsers are
-   inconsistent about whether a fixed z-index:auto element paints above or
-   below later in-flow static siblings, and it can lose that fight. */
-.home { position: fixed; inset: 0; overflow: hidden; z-index: 20; }
-/* Stage 2 releases the hijack: FAQ (the last stage, already at rel=0) stays
-   put as one viewport-tall block, and native document scroll takes over
-   below it to reveal CTA + Footer, which sit right after `.home` in flow. */
-.home[data-stage="2"] { position: relative; inset: auto; min-height: 100vh; overflow: visible; z-index: auto; }
+/* One native scroll, top to bottom. `.home__track` carries the real document
+   height, and `.home__viewport` sticks to the top of the screen while that
+   track scrolls past it — so the sections stay put and move only by the inline
+   transforms fed from src/lib/scrollMap.js. Nothing is accumulated from wheel
+   deltas, so there is no position to drift, lock, or debounce. */
 
-/* Wrapper carries the scroll-driven position (inline transform, no
-   transition — same 1:1 tracking as the Providers stage it's paired with).
-   The video's own blur/zoom stays a separate, independently-transitioned
-   transform on the child so the two don't fight over one `transform` value. */
+/* No `scroll-snap-type` here, deliberately. The hero -> Providers boundary wants
+   a snap, but neither strictness works on a track this long: `proximity` never
+   engages over the hero's 900px, and `mandatory` treats all 17000px as snappable
+   and drags a scroll at 7000 back to 900. HomePage.jsx settles that one boundary
+   itself instead, after the scroll stops. */
+html {
+  /* The track is ~17000px, which makes for an absurd thumb. The scroll itself
+     stays completely native — keys, find-in-page and momentum all still work. */
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar { display: none; }
+
+/* No `overflow` here: it would turn `.home` into the scroll container and the
+   viewport below would stick inside it instead of to the page. */
+.home { position: relative; }
+
+/* Height comes from TOTAL_SCROLL inline (see HomePage.jsx) so the timeline has
+   exactly one source of truth. */
+.home__track { position: relative; }
+.home__viewport { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+
+/* Wrapper carries the scroll-driven position (inline transform, no transition —
+   same 1:1 tracking as the Providers stage it's paired with). The video's own
+   blur/zoom stays a separate, independently-transitioned transform on the child
+   so the two don't fight over one `transform` value. */
 .home__bg { position: absolute; inset: 0; z-index: 0; }
 
-/* Shared background video (persists across stages; blurs on Providers) */
+/* Shared background video (persists across stages; blurs once the hero hands off) */
 .bg-video {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; z-index: 0;
@@ -32,105 +45,46 @@
   background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.05) 100%);
   transition: background 0.7s ease;
 }
-.home[data-stage="1"] .home__overlay,
-.home[data-stage="2"] .home__overlay {
+.home[data-hero-exited="true"] .home__overlay {
   background: linear-gradient(180deg, rgba(20,14,10,0.35) 0%, rgba(20,14,10,0.25) 100%);
 }
 
-/* NOTE: NEVER put `filter`/`will-change:filter` on `.home__stage--hero` — not
-   even animated on exit. It contains the glass header (nav pill + Create
-   Account), and ANY non-`none` filter on an ancestor breaks their
-   `backdrop-filter`. The exit blur therefore lives on the hero *content*
-   only (see below), never on this wrapper. Opacity crossfade is safe. */
-.home__stage {
-  position: absolute; inset: 0;
-  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.home__stage--hero { z-index: 2; }
+/* NOTE: NEVER put `filter`/`will-change:filter` on `.home__stage--hero`. It
+   contains the glass header (nav pill + Create Account), and ANY non-`none`
+   filter on an ancestor breaks their `backdrop-filter`. The exit blur therefore
+   lives on the hero *content* only (see below), never on this wrapper.
+   Opacity is safe. */
+/* No opacity transition: opacity is scroll-linked through --hero-exit, and a
+   transition would lag a frame behind every scroll tick instead of tracking it. */
+.home__stage { position: absolute; inset: 0; pointer-events: none; }
 
-/* Providers and Key Numbers: position comes from an inline `transform` set on
-   every scroll tick (see HomePage.jsx) — no CSS transition on `transform`
-   here, so they track the scroll 1:1 instead of easing/catching up behind it.
-   Once inside the zone both stay fully opaque; only their Y position moves. */
-.home__stage--providers { z-index: 3; opacity: 0; pointer-events: none; }
-.home__stage--keynumbers { z-index: 4; opacity: 0; pointer-events: none; }
-.home__stage--selection { z-index: 5; opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--providers,
-.home[data-stage="1"] .home__stage--keynumbers,
-.home[data-stage="1"] .home__stage--selection,
-.home[data-stage="2"] .home__stage--providers,
-.home[data-stage="2"] .home__stage--keynumbers,
-.home[data-stage="2"] .home__stage--selection {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
+/* The hero dissolves over the first half of its segment and the sections fade
+   in over the second — the same staggered cross-fade the old 0.35s
+   transition-delay produced, now driven by scroll instead of by a timer.
+   Out-of-range opacity clamps to 0..1 on its own. */
+.home__stage--hero { z-index: 2; opacity: calc(1 - var(--hero-exit) * 2); }
+.home__stage--providers { z-index: 3; }
+.home__stage--keynumbers { z-index: 4; }
+.home__stage--selection { z-index: 5; }
+.home__stage:not(.home__stage--hero) { opacity: calc(var(--hero-exit) * 2 - 1); }
 
-.home__stage--explore { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--explore,
-.home[data-stage="2"] .home__stage--explore {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
+.home[data-hero-exited="false"] .home__stage--hero { pointer-events: auto; }
+.home[data-hero-exited="true"] .home__stage:not(.home__stage--hero) { pointer-events: auto; }
 
-.home__stage--howitworks { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--howitworks,
-.home[data-stage="2"] .home__stage--howitworks {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
-
-.home__stage--whylevels { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--whylevels,
-.home[data-stage="2"] .home__stage--whylevels {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
-
-.home__stage--testimonials { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--testimonials,
-.home[data-stage="2"] .home__stage--testimonials {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
-
-.home__stage--faq { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--faq,
-.home[data-stage="2"] .home__stage--faq {
-  opacity: 1; pointer-events: auto;
-  transition-delay: 0.35s;
-}
-
-/* Hero fades out once we leave it (opacity only — no ancestor filter). */
-.home[data-stage="1"] .home__stage--hero,
-.home[data-stage="2"] .home__stage--hero {
-  opacity: 0; pointer-events: none;
-}
+/* CTA is the last stage, so it has to fill the screen-tall layer rather than
+   stand on its own 800px min-height the way it would in normal flow. */
+.home__stage--cta .cta { height: 100%; min-height: 0; }
 
 /* The "blur out" effect is applied to the non-glass hero content only, so the
    glass header keeps a working backdrop-filter through the whole transition. */
 .hero-title, .hero-cta, .hero-explore {
-  transition: filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.home[data-stage="1"] .hero-title,
-.home[data-stage="1"] .hero-cta,
-.home[data-stage="1"] .hero-explore,
-.home[data-stage="2"] .hero-title,
-.home[data-stage="2"] .hero-cta,
-.home[data-stage="2"] .hero-explore {
-  filter: blur(18px);
+  filter: blur(calc(var(--hero-exit) * 18px));
 }
 
 /* Only the menu slides up on exit; the rest just fades + blurs */
-.hero-headerwrap { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
-.home[data-stage="1"] .hero-headerwrap,
-.home[data-stage="2"] .hero-headerwrap {
-  transform: translateY(-180px);
-}
+.hero-headerwrap { transform: translateY(calc(var(--hero-exit) * -180px)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .home__stage, .bg-video, .home__overlay, .hero-headerwrap,
-  .hero-title, .hero-cta, .hero-explore { transition: none; }
-  .home[data-stage="1"] .hero-title,
-  .home[data-stage="1"] .hero-cta,
-  .home[data-stage="1"] .hero-explore { filter: none; }
+  .bg-video, .home__overlay { transition: none; }
+  .hero-title, .hero-cta, .hero-explore { filter: none; }
 }
