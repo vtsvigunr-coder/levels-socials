@@ -8,6 +8,10 @@ import ExplorePlatformSlide from "../sections/ExplorePlatform/ExplorePlatformSli
 import HowItWorksSection from "../sections/HowItWorks/HowItWorksSection.jsx";
 import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
 import WhyLevelsSocialsSection from "../sections/WhyLevelsSocials/WhyLevelsSocialsSection.jsx";
+import TestimonialsSection from "../sections/Testimonials/TestimonialsSection.jsx";
+import FAQSection from "../sections/FAQ/FAQSection.jsx";
+import CTASection from "../sections/CTA/CTASection.jsx";
+import FooterSection from "../sections/Footer/FooterSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -23,14 +27,16 @@ const SELECTION_STAGE = 2; // Selection Standard's index — the other stage wit
 const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last Explore Platform card
 const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
 const WHY_LEVELS_STAGE = 9; // "Why Levels Socials" cards — right after Get Started; also has a horizontal sub-phase
-const V_MAX = 9; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials
+const TESTIMONIALS_STAGE = 10; // "Trust & Transparency" testimonial carousel — right after Why Levels Socials; navigated by its own arrow buttons, not scroll
+const FAQ_STAGE = 11; // "Frequently Asked Questions" — right after Testimonials; category tabs + accordion, no scroll sub-phase
+const V_MAX = 11; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials, 10 Testimonials, 11 FAQ
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
 const rel = (p, stageIndex) => Math.min(1, Math.max(-1, p - stageIndex));
 
 export default function HomePage() {
-  const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal)
+  const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal), 2 = released (native scroll, CTA + Footer)
   const [vScroll, setVScroll] = useState(0); // 0..2, continuous position across Providers/Key Numbers/Selection Standard
   const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
   const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
@@ -50,6 +56,15 @@ export default function HomePage() {
   useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
   useEffect(() => { hGetStartedRef.current = hScrollGetStarted; }, [hScrollGetStarted]);
   useEffect(() => { hWhyLevelsRef.current = hScrollWhyLevels; }, [hScrollWhyLevels]);
+
+  // Native scroll stays locked out (body overflow hidden) for the entire
+  // hijacked zone (stages 0/1) so the browser can't sneak past it via
+  // scrollbar drag or keyboard — only stage 2 (released, CTA + Footer) gets
+  // real document scroll.
+  useEffect(() => {
+    document.body.style.overflow = stage === 2 ? "" : "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [stage]);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -71,10 +86,32 @@ export default function HomePage() {
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
 
+    // Past the last hijacked stage (FAQ), scrolling further down hands off to
+    // the browser's native scroll for CTA + Footer — same discrete pinned
+    // jump as hero <-> scroll-zone, just at the other end.
+    const releaseScroll = () => {
+      lockedRef.current = true;
+      setStage(2);
+      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
+    };
+    // Scrolling up from the very top of the released (native-scroll) content
+    // re-enters the hijacked zone, landing back on FAQ (vScroll is still at
+    // V_MAX from before release, so nothing else needs resetting).
+    const reEnterZone = () => {
+      lockedRef.current = true;
+      setStage(1);
+      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
+    };
+
     const applyDelta = (dy) => {
       if (stageRef.current === 0) {
         if (lockedRef.current) return;
         if (dy > ENTER_THRESHOLD) enterZone();
+        return;
+      }
+      if (stageRef.current === 2) {
+        if (lockedRef.current) return;
+        if (window.scrollY <= 0 && dy < -ENTER_THRESHOLD) reEnterZone();
         return;
       }
       // Ignore the trailing momentum of the gesture that just entered the
@@ -83,9 +120,10 @@ export default function HomePage() {
       if (lockedRef.current) return;
 
       // Why Levels Socials has its own horizontal sub-phase (the 3 cards),
-      // mirroring Providers' below. Since it sits at V_MAX (the last stage),
-      // it can never be overshot from above, so it needs no vertical-snap
-      // guard either.
+      // mirroring Providers' below. Now that Testimonials sits past it at
+      // V_MAX, an ordinary scroll delta could step clean over
+      // WHY_LEVELS_STAGE — the vertical-snap guard below handles that the
+      // same way it already does for SELECTION_STAGE and GET_STARTED_STAGE.
       const inWhyLevelsHorizontalPhase =
         vRef.current === WHY_LEVELS_STAGE &&
         (hWhyLevelsRef.current > 0 || dy > 0) &&
@@ -173,8 +211,17 @@ export default function HomePage() {
         nextV = GET_STARTED_STAGE;
       }
 
+      // Same snap, for WHY_LEVELS_STAGE now that Testimonials sits past it —
+      // see the comment above inWhyLevelsHorizontalPhase.
+      if (dy > 0 && vRef.current < WHY_LEVELS_STAGE && nextV > WHY_LEVELS_STAGE && hWhyLevelsRef.current < 1) {
+        nextV = WHY_LEVELS_STAGE;
+      } else if (dy < 0 && vRef.current > WHY_LEVELS_STAGE && nextV < WHY_LEVELS_STAGE && hWhyLevelsRef.current > 0) {
+        nextV = WHY_LEVELS_STAGE;
+      }
+
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
+        else if (nextV === V_MAX && dy > ENTER_THRESHOLD && !lockedRef.current) releaseScroll();
         return;
       }
       vRef.current = nextV;
@@ -183,6 +230,16 @@ export default function HomePage() {
 
     const onWheel = (e) => {
       if (e.deltaY === 0) return;
+      // Stage 2 is native document scroll — only intercept the "scrolled
+      // back up to the very top" gesture that re-enters the hijacked zone;
+      // every other wheel tick here is left alone for the browser to handle.
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && e.deltaY < -ENTER_THRESHOLD) {
+          e.preventDefault();
+          applyDelta(e.deltaY);
+        }
+        return;
+      }
       e.preventDefault();
       applyDelta(e.deltaY);
     };
@@ -194,6 +251,10 @@ export default function HomePage() {
       const y = e.touches[0].clientY;
       const dy = touchY - y;
       touchY = y;
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && dy * 2.2 < -ENTER_THRESHOLD) applyDelta(dy * 2.2);
+        return;
+      }
       applyDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
     };
 
@@ -223,8 +284,13 @@ export default function HomePage() {
   const getStartedRel = rel(vScroll, GET_STARTED_STAGE);
   const whyLevelsRel = rel(vScroll, WHY_LEVELS_STAGE);
   const whyLevelsActive = vScroll > WHY_LEVELS_STAGE - 0.5;
+  const testimonialsRel = rel(vScroll, TESTIMONIALS_STAGE);
+  const testimonialsActive = vScroll > TESTIMONIALS_STAGE - 0.5;
+  const faqRel = rel(vScroll, FAQ_STAGE);
+  const faqActive = vScroll > FAQ_STAGE - 0.5;
 
   return (
+    <>
     <main
       className="home"
       data-testid="home"
@@ -303,6 +369,25 @@ export default function HomePage() {
       >
         <WhyLevelsSocialsSection progress={hScrollWhyLevels} active={whyLevelsActive} />
       </div>
+
+      <div
+        className="home__stage home__stage--testimonials"
+        style={{ zIndex: 13, transform: `translateY(${(-testimonialsRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || testimonialsRel >= 1}
+      >
+        <TestimonialsSection active={testimonialsActive} />
+      </div>
+
+      <div
+        className="home__stage home__stage--faq"
+        style={{ zIndex: 14, transform: `translateY(${(-faqRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || faqRel >= 1}
+      >
+        <FAQSection active={faqActive} />
+      </div>
     </main>
+    <CTASection />
+    <FooterSection />
+    </>
   );
 }

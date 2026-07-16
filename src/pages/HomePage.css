@@ -3,6 +3,10 @@
    and simply move (inline transform driven by scroll amount in HomePage.jsx),
    like a normal page scroll. The page itself never scrolls natively. */
 .home { position: fixed; inset: 0; overflow: hidden; }
+/* Stage 2 releases the hijack: FAQ (the last stage, already at rel=0) stays
+   put as one viewport-tall block, and native document scroll takes over
+   below it to reveal CTA + Footer, which sit right after `.home` in flow. */
+.home[data-stage="2"] { position: relative; inset: auto; min-height: 100vh; overflow: visible; }
 
 /* Wrapper carries the scroll-driven position (inline transform, no
    transition — same 1:1 tracking as the Providers stage it's paired with).
@@ -24,7 +28,8 @@
   background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.05) 100%);
   transition: background 0.7s ease;
 }
-.home[data-stage="1"] .home__overlay {
+.home[data-stage="1"] .home__overlay,
+.home[data-stage="2"] .home__overlay {
   background: linear-gradient(180deg, rgba(20,14,10,0.35) 0%, rgba(20,14,10,0.25) 100%);
 }
 
@@ -48,31 +53,52 @@
 .home__stage--selection { z-index: 5; opacity: 0; pointer-events: none; }
 .home[data-stage="1"] .home__stage--providers,
 .home[data-stage="1"] .home__stage--keynumbers,
-.home[data-stage="1"] .home__stage--selection {
+.home[data-stage="1"] .home__stage--selection,
+.home[data-stage="2"] .home__stage--providers,
+.home[data-stage="2"] .home__stage--keynumbers,
+.home[data-stage="2"] .home__stage--selection {
   opacity: 1; pointer-events: auto;
   transition-delay: 0.35s;
 }
 
 .home__stage--explore { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--explore {
+.home[data-stage="1"] .home__stage--explore,
+.home[data-stage="2"] .home__stage--explore {
   opacity: 1; pointer-events: auto;
   transition-delay: 0.35s;
 }
 
 .home__stage--howitworks { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--howitworks {
+.home[data-stage="1"] .home__stage--howitworks,
+.home[data-stage="2"] .home__stage--howitworks {
   opacity: 1; pointer-events: auto;
   transition-delay: 0.35s;
 }
 
 .home__stage--whylevels { opacity: 0; pointer-events: none; }
-.home[data-stage="1"] .home__stage--whylevels {
+.home[data-stage="1"] .home__stage--whylevels,
+.home[data-stage="2"] .home__stage--whylevels {
+  opacity: 1; pointer-events: auto;
+  transition-delay: 0.35s;
+}
+
+.home__stage--testimonials { opacity: 0; pointer-events: none; }
+.home[data-stage="1"] .home__stage--testimonials,
+.home[data-stage="2"] .home__stage--testimonials {
+  opacity: 1; pointer-events: auto;
+  transition-delay: 0.35s;
+}
+
+.home__stage--faq { opacity: 0; pointer-events: none; }
+.home[data-stage="1"] .home__stage--faq,
+.home[data-stage="2"] .home__stage--faq {
   opacity: 1; pointer-events: auto;
   transition-delay: 0.35s;
 }
 
 /* Hero fades out once we leave it (opacity only — no ancestor filter). */
-.home[data-stage="1"] .home__stage--hero {
+.home[data-stage="1"] .home__stage--hero,
+.home[data-stage="2"] .home__stage--hero {
   opacity: 0; pointer-events: none;
 }
 
@@ -83,13 +109,19 @@
 }
 .home[data-stage="1"] .hero-title,
 .home[data-stage="1"] .hero-cta,
-.home[data-stage="1"] .hero-explore {
+.home[data-stage="1"] .hero-explore,
+.home[data-stage="2"] .hero-title,
+.home[data-stage="2"] .hero-cta,
+.home[data-stage="2"] .hero-explore {
   filter: blur(18px);
 }
 
 /* Only the menu slides up on exit; the rest just fades + blurs */
 .hero-headerwrap { transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
-.home[data-stage="1"] .hero-headerwrap { transform: translateY(-180px); }
+.home[data-stage="1"] .hero-headerwrap,
+.home[data-stage="2"] .hero-headerwrap {
+  transform: translateY(-180px);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .home__stage, .bg-video, .home__overlay, .hero-headerwrap,
