@@ -1,6 +1,6 @@
-import operatingModelImg from "../assets/why-levels-socials/operating-model.png";
-import providerQualityImg from "../assets/why-levels-socials/provider-quality.png";
-import transparentDataImg from "../assets/why-levels-socials/transparent-data.png";
+import operatingModelImg from "../assets/why-levels-socials/operating-model.webp";
+import providerQualityImg from "../assets/why-levels-socials/provider-quality.webp";
+import transparentDataImg from "../assets/why-levels-socials/transparent-data.webp";
 
 // Cards for the "Why Levels Socials" horizontal-scroll carousel.
 const WHY_LEVELS_SOCIALS = [

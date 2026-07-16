@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import TestimonialCard from "./TestimonialCard.jsx";
 import TESTIMONIALS from "../../data/testimonials.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -11,7 +11,7 @@ const GAP = 20;
 const STEP = CARD_W + GAP;
 const SLIDE_COUNT = TESTIMONIALS.length;
 
-export default function TestimonialsSection({ active = false }) {
+function TestimonialsSection({ active = false }) {
   const [index, setIndex] = useState(0);
 
   const goPrev = () => setIndex((i) => (i - 1 + SLIDE_COUNT) % SLIDE_COUNT);
@@ -70,3 +70,8 @@ export default function TestimonialsSection({ active = false }) {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(TestimonialsSection);

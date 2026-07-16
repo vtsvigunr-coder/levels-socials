@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../../lib/useReducedMotion.js";
-import cardImg from "../../../assets/explore-platform/dashboard4.png";
+import cardImg from "../../../assets/explore-platform/dashboard4.webp";
 
 export default function DashboardCard({ active }) {
   const reduced = useReducedMotion();

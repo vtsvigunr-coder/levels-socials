@@ -1,7 +1,8 @@
+import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
 import logoIcon from "../../assets/logo-icon.svg";
-import bgImage from "../../assets/how-it-works/how-it-work.png";
+import bgImage from "../../assets/how-it-works/how-it-work.webp";
 import "./HowItWorksIntro.css";
 
 // First half of the "How it Works" spread (Figma node 799:15810) — the
@@ -9,7 +10,7 @@ import "./HowItWorksIntro.css";
 // Both sections crop the same shared background rectangle (node 799:15809,
 // 1443x1605 behind both frames combined) — this one shows its top (0-750 of
 // 1605), the next section shows the rest (750-1605). See .hiw-intro__bg.
-export default function HowItWorksSection() {
+function HowItWorksSection() {
   return (
     <section className="hiw-intro">
       <div className="hiw-intro__bg" aria-hidden="true">
@@ -37,3 +38,8 @@ export default function HowItWorksSection() {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(HowItWorksSection);

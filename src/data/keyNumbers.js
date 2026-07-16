@@ -1,6 +1,6 @@
-import withdrawalsImg from "../assets/keynumbers/withdrawals.png";
-import investorsImg from "../assets/keynumbers/investors.png";
-import affiliatesImg from "../assets/keynumbers/affiliates.png";
+import withdrawalsImg from "../assets/keynumbers/withdrawals.webp";
+import investorsImg from "../assets/keynumbers/investors.webp";
+import affiliatesImg from "../assets/keynumbers/affiliates.webp";
 
 import barsChart from "../assets/keynumbers/chart-bars.svg";
 import barsChartHover from "../assets/keynumbers/chart-bars-hover.svg";

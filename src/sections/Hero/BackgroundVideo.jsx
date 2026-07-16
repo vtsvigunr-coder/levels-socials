@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import heroVideo from "../../assets/hero.mp4";
-import heroPoster from "../../assets/hero-poster.jpg";
+import heroPoster from "../../assets/hero-poster.webp";
 
 // Shared full-screen video background. Persists across the Hero -> Providers
 // scroll transition; only its blur changes. Plays once and holds the last frame.
-export default function BackgroundVideo({ blurred = false }) {
+function BackgroundVideo({ blurred = false }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -28,3 +28,8 @@ export default function BackgroundVideo({ blurred = false }) {
     />
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(BackgroundVideo);
