@@ -8,6 +8,7 @@ import ExplorePlatformSlide from "../sections/ExplorePlatform/ExplorePlatformSli
 import HowItWorksSection from "../sections/HowItWorks/HowItWorksSection.jsx";
 import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
 import WhyLevelsSocialsSection from "../sections/WhyLevelsSocials/WhyLevelsSocialsSection.jsx";
+import TestimonialsSection from "../sections/Testimonials/TestimonialsSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -23,7 +24,8 @@ const SELECTION_STAGE = 2; // Selection Standard's index — the other stage wit
 const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last Explore Platform card
 const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
 const WHY_LEVELS_STAGE = 9; // "Why Levels Socials" cards — right after Get Started; also has a horizontal sub-phase
-const V_MAX = 9; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials
+const TESTIMONIALS_STAGE = 10; // "Trust & Transparency" testimonial carousel — right after Why Levels Socials; navigated by its own arrow buttons, not scroll
+const V_MAX = 10; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials, 10 Testimonials
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -83,9 +85,10 @@ export default function HomePage() {
       if (lockedRef.current) return;
 
       // Why Levels Socials has its own horizontal sub-phase (the 3 cards),
-      // mirroring Providers' below. Since it sits at V_MAX (the last stage),
-      // it can never be overshot from above, so it needs no vertical-snap
-      // guard either.
+      // mirroring Providers' below. Now that Testimonials sits past it at
+      // V_MAX, an ordinary scroll delta could step clean over
+      // WHY_LEVELS_STAGE — the vertical-snap guard below handles that the
+      // same way it already does for SELECTION_STAGE and GET_STARTED_STAGE.
       const inWhyLevelsHorizontalPhase =
         vRef.current === WHY_LEVELS_STAGE &&
         (hWhyLevelsRef.current > 0 || dy > 0) &&
@@ -173,6 +176,14 @@ export default function HomePage() {
         nextV = GET_STARTED_STAGE;
       }
 
+      // Same snap, for WHY_LEVELS_STAGE now that Testimonials sits past it —
+      // see the comment above inWhyLevelsHorizontalPhase.
+      if (dy > 0 && vRef.current < WHY_LEVELS_STAGE && nextV > WHY_LEVELS_STAGE && hWhyLevelsRef.current < 1) {
+        nextV = WHY_LEVELS_STAGE;
+      } else if (dy < 0 && vRef.current > WHY_LEVELS_STAGE && nextV < WHY_LEVELS_STAGE && hWhyLevelsRef.current > 0) {
+        nextV = WHY_LEVELS_STAGE;
+      }
+
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
         return;
@@ -223,6 +234,8 @@ export default function HomePage() {
   const getStartedRel = rel(vScroll, GET_STARTED_STAGE);
   const whyLevelsRel = rel(vScroll, WHY_LEVELS_STAGE);
   const whyLevelsActive = vScroll > WHY_LEVELS_STAGE - 0.5;
+  const testimonialsRel = rel(vScroll, TESTIMONIALS_STAGE);
+  const testimonialsActive = vScroll > TESTIMONIALS_STAGE - 0.5;
 
   return (
     <main
@@ -302,6 +315,14 @@ export default function HomePage() {
         aria-hidden={stage === 0 || whyLevelsRel >= 1}
       >
         <WhyLevelsSocialsSection progress={hScrollWhyLevels} active={whyLevelsActive} />
+      </div>
+
+      <div
+        className="home__stage home__stage--testimonials"
+        style={{ zIndex: 13, transform: `translateY(${(-testimonialsRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || testimonialsRel >= 1}
+      >
+        <TestimonialsSection active={testimonialsActive} />
       </div>
     </main>
   );
