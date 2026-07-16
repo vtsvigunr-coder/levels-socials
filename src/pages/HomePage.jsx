@@ -9,6 +9,7 @@ import HowItWorksSection from "../sections/HowItWorks/HowItWorksSection.jsx";
 import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
 import WhyLevelsSocialsSection from "../sections/WhyLevelsSocials/WhyLevelsSocialsSection.jsx";
 import TestimonialsSection from "../sections/Testimonials/TestimonialsSection.jsx";
+import FAQSection from "../sections/FAQ/FAQSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -25,7 +26,8 @@ const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last
 const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
 const WHY_LEVELS_STAGE = 9; // "Why Levels Socials" cards — right after Get Started; also has a horizontal sub-phase
 const TESTIMONIALS_STAGE = 10; // "Trust & Transparency" testimonial carousel — right after Why Levels Socials; navigated by its own arrow buttons, not scroll
-const V_MAX = 10; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials, 10 Testimonials
+const FAQ_STAGE = 11; // "Frequently Asked Questions" — right after Testimonials; category tabs + accordion, no scroll sub-phase
+const V_MAX = 11; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials, 10 Testimonials, 11 FAQ
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -236,6 +238,8 @@ export default function HomePage() {
   const whyLevelsActive = vScroll > WHY_LEVELS_STAGE - 0.5;
   const testimonialsRel = rel(vScroll, TESTIMONIALS_STAGE);
   const testimonialsActive = vScroll > TESTIMONIALS_STAGE - 0.5;
+  const faqRel = rel(vScroll, FAQ_STAGE);
+  const faqActive = vScroll > FAQ_STAGE - 0.5;
 
   return (
     <main
@@ -323,6 +327,14 @@ export default function HomePage() {
         aria-hidden={stage === 0 || testimonialsRel >= 1}
       >
         <TestimonialsSection active={testimonialsActive} />
+      </div>
+
+      <div
+        className="home__stage home__stage--faq"
+        style={{ zIndex: 14, transform: `translateY(${(-faqRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || faqRel >= 1}
+      >
+        <FAQSection active={faqActive} />
       </div>
     </main>
   );

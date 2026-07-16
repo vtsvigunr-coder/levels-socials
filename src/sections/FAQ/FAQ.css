@@ -1,0 +1,78 @@
+.faq {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+  background: var(--white);
+  color: var(--black);
+}
+.faq__inner { width: 100%; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding: 0 120px; }
+
+/* Left column — tag/title on top, CTA card pinned to the bottom */
+.faq__left { display: flex; flex-direction: column; justify-content: space-between; align-self: stretch; width: 474px; flex: none; }
+.faq__intro { display: flex; flex-direction: column; gap: 12px; }
+.faq__tag { display: flex; align-items: center; gap: 16px; font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; }
+.faq__logoicon { width: 16px; height: 16px; }
+.faq__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: var(--black); }
+
+.faq__cta { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; padding: 24px; border-radius: 16px; background: #F1F1F1; margin-top: 40px; }
+.faq__ctaicon { width: 24px; height: 24px; }
+.faq__ctaheading { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--black); width: 175px; }
+.faq__ctatext { font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; width: 175px; margin-top: -20px; }
+.faq__ctabtn { background: var(--black); color: var(--white); }
+
+/* Right column — category tabs + accordion list */
+.faq__right { display: flex; flex-direction: column; gap: 48px; width: 590px; flex: none; }
+
+.faq__tabs { display: flex; gap: 16px; flex-wrap: wrap; }
+.faq__tab {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 18px 0 12px; border-radius: 500px; border: none; cursor: pointer;
+  background: #EAEAEA; color: var(--black);
+  font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; white-space: nowrap;
+}
+.faq__tab--active { background: var(--accent); color: var(--white); }
+.faq__tabicon { width: 18px; height: 18px; filter: brightness(0); }
+.faq__tab--active .faq__tabicon { filter: brightness(0) invert(1); }
+
+.faq__list { display: flex; flex-direction: column; width: 100%; }
+.faq__item { border-top: 1px solid #E1E1E1; width: 100%; }
+.faq__item:last-child { border-bottom: 1px solid #E1E1E1; }
+.faq__itemhead {
+  display: flex; align-items: center; gap: 24px; width: 100%;
+  padding: 24px 16px; border: none; background: none; cursor: pointer; text-align: left;
+}
+.faq__itemtext { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+.faq__question { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; color: var(--black); }
+.faq__toggleicon { width: 20px; height: 20px; flex: none; object-fit: contain; }
+.faq__answer { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #949494; max-width: 488px; }
+
+/* --- Staged entrance (triggered when this section becomes active) --- */
+.faq__tag, .faq__title, .faq__cta {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.faq__right { opacity: 0; transform: translateX(60px); transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+
+.faq[data-active="true"] .faq__tag,
+.faq[data-active="true"] .faq__title,
+.faq[data-active="true"] .faq__cta {
+  opacity: 1; transform: translateY(0);
+}
+.faq[data-active="true"] .faq__tag   { transition-delay: 0.1s; }
+.faq[data-active="true"] .faq__title { transition-delay: 0.17s; }
+.faq[data-active="true"] .faq__cta   { transition-delay: 0.24s; }
+.faq[data-active="true"] .faq__right { opacity: 1; transform: translateX(0); transition-delay: 0.35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq__tag, .faq__title, .faq__cta, .faq__right { opacity: 1; transform: none; transition: none; }
+}
+
+@media (max-width: 1000px) {
+  .faq { padding: 60px 0; }
+  .faq__inner { flex-direction: column; align-items: stretch; padding: 0 20px; gap: 40px; }
+  .faq__left, .faq__right { width: 100%; }
+}
