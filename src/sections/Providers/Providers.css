@@ -95,6 +95,13 @@
 .risk--medium .risk__dot { background: var(--accent); }
 
 .pcard__profile { display: flex; align-items: flex-end; gap: 2px; flex: none; }
+/* Here the dot leads the button rather than trailing it, so the hover shape
+   is mirrored against GradientDot.css's default. */
+.pcard__profile:hover .gradient-dot {
+  width: auto; height: auto; align-self: stretch; aspect-ratio: 1 / 1;
+  border-radius: 500px 500px 12px 500px;
+}
+.pcard__profile:hover .gradient-dot__icon { opacity: 1; transform: scale(1); }
 .pcard__profilebtn {
   background: var(--black); color: var(--white);
   height: 32px; padding: 12px 16px 12px 24px;

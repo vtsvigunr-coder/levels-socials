@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
 import KeyNumberCard from "./KeyNumberCard.jsx";
@@ -5,7 +6,7 @@ import KEY_NUMBERS from "../../data/keyNumbers.js";
 import logoIcon from "../../assets/logo-icon.svg";
 import "./KeyNumbers.css";
 
-export default function KeyNumbersSection() {
+function KeyNumbersSection() {
   return (
     <section className="keynum" data-testid="key-numbers">
       <div className="keynum__inner">
@@ -34,3 +35,8 @@ export default function KeyNumbersSection() {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(KeyNumbersSection);

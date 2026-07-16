@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../../lib/useReducedMotion.js";
-import cardImg from "../../../assets/explore-platform/dashboard2.png";
+import cardImg from "../../../assets/explore-platform/dashboard2.webp";
 
 export default function EarnedAccessCard({ active }) {
   const reduced = useReducedMotion();

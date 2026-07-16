@@ -1,3 +1,4 @@
+import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
 import WhyCard from "./WhyCard.jsx";
@@ -10,7 +11,7 @@ const GAP = 20;
 const STEP = CARD_W + GAP; // advance one full card per horizontal-scroll step
 const SLIDE_COUNT = WHY_LEVELS_SOCIALS.length;
 
-export default function WhyLevelsSocialsSection({ progress = 0, active = false }) {
+function WhyLevelsSocialsSection({ progress = 0, active = false }) {
   // Continuous position across the 3 cards, driven 1:1 by horizontal scroll —
   // no CSS transition, so it never lags behind the scroll amount (same
   // pattern as the Providers carousel).
@@ -52,3 +53,8 @@ export default function WhyLevelsSocialsSection({ progress = 0, active = false }
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(WhyLevelsSocialsSection);

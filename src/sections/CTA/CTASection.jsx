@@ -1,10 +1,11 @@
+import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
 import logoIcon from "../../assets/logo-icon.svg";
-import ctaBg from "../../assets/cta/cta-bg.png";
+import ctaBg from "../../assets/cta/cta-bg.webp";
 import "./CTA.css";
 
-export default function CTASection() {
+function CTASection() {
   return (
     <section className="cta">
       <div
@@ -28,3 +29,8 @@ export default function CTASection() {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(CTASection);

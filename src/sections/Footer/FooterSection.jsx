@@ -1,3 +1,4 @@
+import { memo } from "react";
 import logo from "../../assets/logo.svg";
 import arrowDown from "../../assets/icons/arrow-down.svg";
 import "./Footer.css";
@@ -6,7 +7,7 @@ const NAV_LINKS = ["About", "How It Works", "Strategy Providers", "Affiliates"];
 const RESOURCE_LINKS = ["Platform", "Blog", "Help Center", "Contact"];
 const LEGAL_LINKS = ["Terms of Use", "Privacy Policy", "Cookies Policy"];
 
-export default function FooterSection({ onBackToTop }) {
+function FooterSection({ onBackToTop }) {
   return (
     <footer className="footer">
       <div className="footer__links">
@@ -110,3 +111,8 @@ export default function FooterSection({ onBackToTop }) {
     </footer>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(FooterSection);

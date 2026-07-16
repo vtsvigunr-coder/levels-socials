@@ -1,7 +1,7 @@
-import providerEvaluationImg from "../assets/selection/provider-evaluation.png";
-import invitationOnlyImg from "../assets/selection/invitation-only.png";
-import verificationBlackImg from "../assets/selection/verification-black.png";
-import verificationWhiteImg from "../assets/selection/verification-white.png";
+import providerEvaluationImg from "../assets/selection/provider-evaluation.webp";
+import invitationOnlyImg from "../assets/selection/invitation-only.webp";
+import verificationBlackImg from "../assets/selection/verification-black.webp";
+import verificationWhiteImg from "../assets/selection/verification-white.webp";
 
 // The horizontal-scroll "Selection Standard" section has 4 slides, but only 3
 // distinct steps: the last slide repeats step 3's copy on a light background,

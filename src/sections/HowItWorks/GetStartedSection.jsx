@@ -1,6 +1,7 @@
+import { memo } from "react";
 import GlassSurface from "../../components/GlassSurface.jsx";
 import HOW_IT_WORKS_STEPS from "../../data/howItWorks.js";
-import bgImage from "../../assets/how-it-works/how-it-work.png";
+import bgImage from "../../assets/how-it-works/how-it-work.webp";
 import checkmarkBadge from "../../assets/how-it-works/checkmark-badge-01.svg";
 import topProviderChart from "../../assets/how-it-works/top-provider-chart.svg";
 import xxxxRings from "../../assets/how-it-works/xxxx-rings.svg";
@@ -112,7 +113,7 @@ function RightCard({ stepId }) {
   );
 }
 
-export default function GetStartedSection({ progress = 0 }) {
+function GetStartedSection({ progress = 0 }) {
   const p = clamp01(progress);
   const panelPos = p * (SLIDE_COUNT - 1);
   const index = Math.min(SLIDE_COUNT - 2, Math.floor(panelPos));
@@ -213,3 +214,8 @@ export default function GetStartedSection({ progress = 0 }) {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(GetStartedSection);

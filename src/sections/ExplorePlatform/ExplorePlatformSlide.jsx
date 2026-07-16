@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Button from "../../components/Button.jsx";
@@ -16,7 +17,7 @@ const CARDS = {
   dashboard: DashboardCard,
 };
 
-export default function ExplorePlatformSlide({ slide, active }) {
+function ExplorePlatformSlide({ slide, active }) {
   const reduced = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1];
 
@@ -70,3 +71,8 @@ export default function ExplorePlatformSlide({ slide, active }) {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(ExplorePlatformSlide);

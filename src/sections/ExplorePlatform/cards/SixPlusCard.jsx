@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useReducedMotion } from "../../../lib/useReducedMotion.js";
-import cardImg from "../../../assets/explore-platform/dashboard1.png";
+import cardImg from "../../../assets/explore-platform/dashboard1.webp";
 
 export default function SixPlusCard({ active }) {
   const reduced = useReducedMotion();

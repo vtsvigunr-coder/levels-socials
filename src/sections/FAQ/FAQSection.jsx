@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import CategoryTabs from "./CategoryTabs.jsx";
 import FAQItem from "./FAQItem.jsx";
 import Button from "../../components/Button.jsx";
@@ -8,7 +8,7 @@ import logoIcon from "../../assets/logo-icon.svg";
 import chatIcon from "../../assets/faq/message-multiple-01.svg";
 import "./FAQ.css";
 
-export default function FAQSection({ active = false }) {
+function FAQSection({ active = false }) {
   const [category, setCategory] = useState("all");
   const [openId, setOpenId] = useState(FAQ_ITEMS[1].id);
 
@@ -59,3 +59,8 @@ export default function FAQSection({ active = false }) {
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(FAQSection);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BackgroundVideo from "../sections/Hero/BackgroundVideo.jsx";
 import Hero from "../sections/Hero/Hero.jsx";
 import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
@@ -66,15 +66,15 @@ export default function HomePage() {
     return () => { document.body.style.overflow = ""; };
   }, [stage]);
 
-  // Footer's "Back to top" is the only way back to Hero once released into
-  // stage 2 (scrolling back up no longer re-enters the hijack — see
-  // releaseScroll below) — it resets every stage back to its start.
-  const resetToHero = () => {
+  // Footer's "Back to top" resets every stage back to its start.
+  // useCallback keeps the reference stable so the memoized Footer below
+  // doesn't re-render on every scroll tick.
+  const resetToHero = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0; hWhyLevelsRef.current = 0;
     setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0); setHScrollWhyLevels(0);
     setStage(0);
-  };
+  }, []);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -240,6 +240,24 @@ export default function HomePage() {
       setVScroll(nextV);
     };
 
+    // Input events fire much faster than the screen repaints — a trackpad
+    // emits ~120 wheel events/sec, and each one used to drive its own state
+    // update and re-render, well over half of which the user never saw as a
+    // painted frame. Accumulate the deltas and flush them once per animation
+    // frame instead: same total movement, at most one update per frame.
+    let pending = 0;
+    let rafId = 0;
+    const flush = () => {
+      rafId = 0;
+      const dy = pending;
+      pending = 0;
+      if (dy !== 0) applyDelta(dy);
+    };
+    const queueDelta = (dy) => {
+      pending += dy;
+      if (!rafId) rafId = requestAnimationFrame(flush);
+    };
+
     const onWheel = (e) => {
       if (e.deltaY === 0) return;
       // Stage 2 is native document scroll — only intercept scrolling up at
@@ -248,12 +266,12 @@ export default function HomePage() {
       if (stageRef.current === 2) {
         if (window.scrollY <= 0 && e.deltaY < 0) {
           e.preventDefault();
-          applyDelta(e.deltaY);
+          queueDelta(e.deltaY);
         }
         return;
       }
       e.preventDefault();
-      applyDelta(e.deltaY);
+      queueDelta(e.deltaY);
     };
 
     let touchY = null;
@@ -264,16 +282,17 @@ export default function HomePage() {
       const dy = touchY - y;
       touchY = y;
       if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && dy < 0) applyDelta(dy * 2.2);
+        if (window.scrollY <= 0 && dy < 0) queueDelta(dy * 2.2);
         return;
       }
-      applyDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
+      queueDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchmove", onTouchMove);

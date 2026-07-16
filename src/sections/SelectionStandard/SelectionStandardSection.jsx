@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useReducedMotion } from "../../lib/useReducedMotion.js";
 import Button from "../../components/Button.jsx";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -22,7 +22,7 @@ function lerp(a, b, t) { return a + (b - a) * t; }
 function clamp01(t) { return Math.min(1, Math.max(0, t)); }
 function smoothstep(t) { const c = clamp01(t); return c * c * (3 - 2 * c); }
 
-export default function SelectionStandardSection({ active = false, progress = 0 }) {
+function SelectionStandardSection({ active = false, progress = 0 }) {
   const reduced = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1];
 
@@ -233,3 +233,8 @@ export default function SelectionStandardSection({ active = false, progress = 0 
     </section>
   );
 }
+
+// memo: HomePage re-renders on every scroll tick to update the stage
+// transforms; without this each tick would also re-render this whole
+// subtree, which never changes unless its own props do.
+export default memo(SelectionStandardSection);
