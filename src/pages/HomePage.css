@@ -2,11 +2,15 @@
    and Key Numbers never fade or disappear: they're both always fully opaque
    and simply move (inline transform driven by scroll amount in HomePage.jsx),
    like a normal page scroll. The page itself never scrolls natively. */
-.home { position: fixed; inset: 0; overflow: hidden; }
+/* z-index pins this above CTA/Footer (its normal-flow siblings, appended
+   after it for the stage-2 release below) — without it, browsers are
+   inconsistent about whether a fixed z-index:auto element paints above or
+   below later in-flow static siblings, and it can lose that fight. */
+.home { position: fixed; inset: 0; overflow: hidden; z-index: 20; }
 /* Stage 2 releases the hijack: FAQ (the last stage, already at rel=0) stays
    put as one viewport-tall block, and native document scroll takes over
    below it to reveal CTA + Footer, which sit right after `.home` in flow. */
-.home[data-stage="2"] { position: relative; inset: auto; min-height: 100vh; overflow: visible; }
+.home[data-stage="2"] { position: relative; inset: auto; min-height: 100vh; overflow: visible; z-index: auto; }
 
 /* Wrapper carries the scroll-driven position (inline transform, no
    transition — same 1:1 tracking as the Providers stage it's paired with).
