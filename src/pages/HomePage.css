@@ -65,6 +65,12 @@
   transition-delay: 0.35s;
 }
 
+.home__stage--whylevels { opacity: 0; pointer-events: none; }
+.home[data-stage="1"] .home__stage--whylevels {
+  opacity: 1; pointer-events: auto;
+  transition-delay: 0.35s;
+}
+
 /* Hero fades out once we leave it (opacity only — no ancestor filter). */
 .home[data-stage="1"] .home__stage--hero {
   opacity: 0; pointer-events: none;

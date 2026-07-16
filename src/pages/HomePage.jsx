@@ -7,6 +7,7 @@ import SelectionStandardSection from "../sections/SelectionStandard/SelectionSta
 import ExplorePlatformSlide from "../sections/ExplorePlatform/ExplorePlatformSlide.jsx";
 import HowItWorksSection from "../sections/HowItWorks/HowItWorksSection.jsx";
 import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
+import WhyLevelsSocialsSection from "../sections/WhyLevelsSocials/WhyLevelsSocialsSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -16,11 +17,13 @@ const V_RANGE = 900; // accumulated px of scroll per vertical section (Providers
 const H_RANGE = 1400; // accumulated px of scroll to sweep all horizontal slides in Selection Standard
 const PROVIDERS_H_RANGE = 900; // accumulated px of scroll to sweep Providers' cards + closing CTA
 const GET_STARTED_H_RANGE = 1200; // accumulated px of scroll to sweep the 3 Get Started steps
+const WHY_LEVELS_H_RANGE = 1800; // accumulated px of scroll to sweep the 3 Why Levels Socials cards
 const PROVIDERS_STAGE = 0; // Providers' index — also has a horizontal sub-phase
 const SELECTION_STAGE = 2; // Selection Standard's index — the other stage with a horizontal sub-phase
 const HOW_IT_WORKS_STAGE = 7; // "How it Works" intro — appears after the last Explore Platform card
 const GET_STARTED_STAGE = 8; // "How to Get Started" step circle — right after the intro; also has a horizontal sub-phase
-const V_MAX = 8; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works
+const WHY_LEVELS_STAGE = 9; // "Why Levels Socials" cards — right after Get Started; also has a horizontal sub-phase
+const V_MAX = 9; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explore Platform cards, 7-8 How it Works, 9 Why Levels Socials
 
 // Clamped "how far past/before this stage" -> a -1..1 offset, used to slide a
 // section fully in (0), fully below (1) or fully above/out (-1) the viewport.
@@ -32,11 +35,13 @@ export default function HomePage() {
   const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
   const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
   const [hScrollGetStarted, setHScrollGetStarted] = useState(0); // 0..1, horizontal position inside Get Started
+  const [hScrollWhyLevels, setHScrollWhyLevels] = useState(0); // 0..1, horizontal position inside Why Levels Socials
   const stageRef = useRef(0);
   const vRef = useRef(0);
   const hRef = useRef(0);
   const hProvidersRef = useRef(0);
   const hGetStartedRef = useRef(0);
+  const hWhyLevelsRef = useRef(0);
   const lockedRef = useRef(false);
 
   useEffect(() => { stageRef.current = stage; }, [stage]);
@@ -44,6 +49,7 @@ export default function HomePage() {
   useEffect(() => { hRef.current = hScroll; }, [hScroll]);
   useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
   useEffect(() => { hGetStartedRef.current = hScrollGetStarted; }, [hScrollGetStarted]);
+  useEffect(() => { hWhyLevelsRef.current = hScrollWhyLevels; }, [hScrollWhyLevels]);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -54,8 +60,8 @@ export default function HomePage() {
     // its internal horizontal slides instead of scrolling further down.
     const enterZone = () => {
       lockedRef.current = true;
-      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0;
-      setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0);
+      vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0; hWhyLevelsRef.current = 0;
+      setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0); setHScrollWhyLevels(0);
       setStage(1);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
@@ -76,10 +82,27 @@ export default function HomePage() {
       // scroll — not as a continuation of the same fling that revealed it.
       if (lockedRef.current) return;
 
-      // Get Started has its own horizontal sub-phase (the 3-step circle),
+      // Why Levels Socials has its own horizontal sub-phase (the 3 cards),
       // mirroring Providers' below. Since it sits at V_MAX (the last stage),
       // it can never be overshot from above, so it needs no vertical-snap
       // guard either.
+      const inWhyLevelsHorizontalPhase =
+        vRef.current === WHY_LEVELS_STAGE &&
+        (hWhyLevelsRef.current > 0 || dy > 0) &&
+        (dy < 0 || hWhyLevelsRef.current < 1);
+      if (inWhyLevelsHorizontalPhase) {
+        const nextH = Math.min(1, Math.max(0, hWhyLevelsRef.current + dy / WHY_LEVELS_H_RANGE));
+        if (nextH === hWhyLevelsRef.current) return;
+        hWhyLevelsRef.current = nextH;
+        setHScrollWhyLevels(nextH);
+        return;
+      }
+
+      // Get Started has its own horizontal sub-phase (the 3-step circle),
+      // the same shape as Selection Standard's below. Now that Why Levels
+      // Socials sits past it at V_MAX, an ordinary scroll delta could step
+      // clean over GET_STARTED_STAGE — the vertical-snap guard below handles
+      // that the same way it already does for SELECTION_STAGE.
       const inGetStartedHorizontalPhase =
         vRef.current === GET_STARTED_STAGE &&
         (hGetStartedRef.current > 0 || dy > 0) &&
@@ -142,6 +165,14 @@ export default function HomePage() {
         nextV = SELECTION_STAGE;
       }
 
+      // Same snap, for GET_STARTED_STAGE now that Why Levels Socials sits
+      // past it — see the comment above inGetStartedHorizontalPhase.
+      if (dy > 0 && vRef.current < GET_STARTED_STAGE && nextV > GET_STARTED_STAGE && hGetStartedRef.current < 1) {
+        nextV = GET_STARTED_STAGE;
+      } else if (dy < 0 && vRef.current > GET_STARTED_STAGE && nextV < GET_STARTED_STAGE && hGetStartedRef.current > 0) {
+        nextV = GET_STARTED_STAGE;
+      }
+
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
         return;
@@ -190,6 +221,8 @@ export default function HomePage() {
   }));
   const howItWorksRel = rel(vScroll, HOW_IT_WORKS_STAGE);
   const getStartedRel = rel(vScroll, GET_STARTED_STAGE);
+  const whyLevelsRel = rel(vScroll, WHY_LEVELS_STAGE);
+  const whyLevelsActive = vScroll > WHY_LEVELS_STAGE - 0.5;
 
   return (
     <main
@@ -261,6 +294,14 @@ export default function HomePage() {
         aria-hidden={stage === 0 || getStartedRel >= 1}
       >
         <GetStartedSection progress={hScrollGetStarted} />
+      </div>
+
+      <div
+        className="home__stage home__stage--whylevels"
+        style={{ zIndex: 12, transform: `translateY(${(-whyLevelsRel * 100).toFixed(3)}%)` }}
+        aria-hidden={stage === 0 || whyLevelsRel >= 1}
+      >
+        <WhyLevelsSocialsSection progress={hScrollWhyLevels} active={whyLevelsActive} />
       </div>
     </main>
   );
