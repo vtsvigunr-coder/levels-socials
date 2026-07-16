@@ -14,6 +14,8 @@ import CTASection from "../sections/CTA/CTASection.jsx";
 import FooterSection from "../sections/Footer/FooterSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import { mapScroll, HERO_EXIT_PX, TOTAL_SCROLL } from "../lib/scrollMap.js";
+import { useSmoothScroll, scrollToY } from "../lib/useSmoothScroll.js";
+import { useReducedMotion } from "../lib/useReducedMotion.js";
 import "./HomePage.css";
 
 const HOW_IT_WORKS_STAGE = 7;
@@ -38,9 +40,16 @@ const SETTLE_MS = 140;
 export default function HomePage() {
   const [scroll, setScroll] = useState(() => mapScroll(0));
 
-  // The browser scrolls; we only read where it got to. Scroll events fire far
-  // more often than the screen repaints, so coalesce them into one update per
-  // frame — same position, a fraction of the renders.
+  // Lenis smooths the wheel; every transform on the page is derived from the
+  // position it lands on, so this is the only place motion is added. Someone who
+  // asked for less of it gets the browser's own scroll back, untouched.
+  const reducedMotion = useReducedMotion();
+  const lenisRef = useSmoothScroll(!reducedMotion);
+
+  // Something else scrolls the window — Lenis, or the browser itself where Lenis
+  // is off; we only read where it got to. Scroll events fire far more often than
+  // the screen repaints, so coalesce them into one update per frame — same
+  // position, a fraction of the renders.
   useEffect(() => {
     let rafId = 0;
     const update = () => {
@@ -66,13 +75,14 @@ export default function HomePage() {
   //
   // So settle this one boundary by hand, and only once the scroll has actually
   // stopped — unlike the old wheel lock, this never fights momentum, it waits
-  // for it. Every other pixel of the page is left entirely to the browser.
+  // for it, Lenis's eased tail included. Every other pixel of the page is left
+  // to whoever owns the scroll.
   useEffect(() => {
     let timer = 0;
     const settle = () => {
       const y = window.scrollY;
       if (y <= 0 || y >= HERO_EXIT_PX) return; // outside the hero's segment: not ours to touch
-      window.scrollTo({ top: y < HERO_EXIT_PX / 2 ? 0 : HERO_EXIT_PX, behavior: "smooth" });
+      scrollToY(lenisRef.current, y < HERO_EXIT_PX / 2 ? 0 : HERO_EXIT_PX);
     };
     const onScroll = () => {
       clearTimeout(timer);
@@ -83,13 +93,13 @@ export default function HomePage() {
       window.removeEventListener("scroll", onScroll);
       clearTimeout(timer);
     };
-  }, []);
+  }, [lenisRef]);
 
   // Footer's "Back to top". useCallback keeps the reference stable so the
   // memoized Footer doesn't re-render on every scroll tick.
   const resetToHero = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+    scrollToY(lenisRef.current, 0, { immediate: true });
+  }, [lenisRef]);
 
   const { heroExit, vScroll, hProviders, hSelection, hGetStarted, hWhyLevels } = scroll;
   const heroExited = heroExit > HERO_HANDOFF;

@@ -1,8 +1,10 @@
-/* One native scroll, top to bottom. `.home__track` carries the real document
-   height, and `.home__viewport` sticks to the top of the screen while that
-   track scrolls past it — so the sections stay put and move only by the inline
-   transforms fed from src/lib/scrollMap.js. Nothing is accumulated from wheel
-   deltas, so there is no position to drift, lock, or debounce. */
+/* One scroll of the window, top to bottom. `.home__track` carries the real
+   document height, and `.home__viewport` sticks to the top of the screen while
+   that track scrolls past it — so the sections stay put and move only by the
+   inline transforms fed from src/lib/scrollMap.js. Lenis eases where the window
+   lands (src/lib/useSmoothScroll.js) but the position is still the window's own:
+   nothing is accumulated from wheel deltas, so there is no position to drift,
+   lock, or debounce. */
 
 /* No `scroll-snap-type` here, deliberately. The hero -> Providers boundary wants
    a snap, but neither strictness works on a track this long: `proximity` never
@@ -10,8 +12,9 @@
    and drags a scroll at 7000 back to 900. HomePage.jsx settles that one boundary
    itself instead, after the scroll stops. */
 html {
-  /* The track is ~17000px, which makes for an absurd thumb. The scroll itself
-     stays completely native — keys, find-in-page and momentum all still work. */
+  /* The track is ~17000px, which makes for an absurd thumb. The scroll position
+     itself is still the window's, so keys and find-in-page still work; Lenis
+     only eases how it gets there. */
   scrollbar-width: none;
 }
 html::-webkit-scrollbar { display: none; }

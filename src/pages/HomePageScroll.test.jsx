@@ -4,8 +4,26 @@ import HomePage from "./HomePage.jsx";
 import { TOTAL_SCROLL } from "../lib/scrollMap.js";
 
 // scrollMap.test.js pins down the timeline arithmetic on its own. What's left to
-// cover here is the wiring: that a native scroll event reaches the page, lands
-// once per frame, and moves what it should.
+// cover here is the wiring: that a scroll event reaches the page, lands once per
+// frame, and moves what it should.
+
+// Lenis is stood in for rather than run: it eases the position over real frames
+// against a real viewport, neither of which jsdom has. What these tests are
+// about is that the page hands its programmatic scrolls to Lenis instead of to
+// the browser — the easing itself is Lenis's business, and tested by Lenis.
+const lenis = vi.hoisted(() => ({ instances: [] }));
+vi.mock("lenis", () => ({
+  default: class LenisStub {
+    constructor(options) {
+      this.options = options;
+      this.scrollTo = vi.fn();
+      this.raf = vi.fn();
+      this.destroy = vi.fn();
+      lenis.instances.push(this);
+    }
+  },
+}));
+const currentLenis = () => lenis.instances.at(-1);
 
 // Faking rAF alongside the timers lets the per-frame batching below be advanced
 // deterministically instead of waiting on real vsync.
@@ -14,6 +32,7 @@ const FAKE = ["requestAnimationFrame", "cancelAnimationFrame", "setTimeout", "cl
 beforeEach(() => {
   vi.useFakeTimers({ toFake: FAKE });
   window.scrollTo = vi.fn();
+  lenis.instances.length = 0;
   Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
 });
 afterEach(() => vi.useRealTimers());
@@ -78,28 +97,28 @@ describe("the hero boundary settles once scrolling stops", () => {
     renderHome();
     scrollTo(300);
     settle();
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+    expect(currentLenis().scrollTo).toHaveBeenCalledWith(0, { immediate: false });
   });
 
   test("a stop past halfway carries on to Providers", () => {
     renderHome();
     scrollTo(600);
     settle();
-    expect(window.scrollTo).toHaveBeenCalledWith({ top: 900, behavior: "smooth" });
+    expect(currentLenis().scrollTo).toHaveBeenCalledWith(900, { immediate: false });
   });
 
   test("it waits for the scroll to stop rather than fighting it", () => {
     renderHome();
     scrollTo(300);
     act(() => { vi.advanceTimersByTime(100); }); // still moving
-    expect(window.scrollTo).not.toHaveBeenCalled();
+    expect(currentLenis().scrollTo).not.toHaveBeenCalled();
   });
 
   test("it never touches a scroll outside the hero's segment", () => {
     renderHome();
     scrollTo(7000);
     settle();
-    expect(window.scrollTo).not.toHaveBeenCalled();
+    expect(currentLenis().scrollTo).not.toHaveBeenCalled();
   });
 
   test("it leaves both ends of the segment alone", () => {
@@ -107,6 +126,15 @@ describe("the hero boundary settles once scrolling stops", () => {
     scrollTo(0);
     settle();
     scrollTo(900);
+    settle();
+    expect(currentLenis().scrollTo).not.toHaveBeenCalled();
+  });
+
+  // Lenis rewrites window.scrollY every frame while it runs, so a native smooth
+  // scrollTo would be overwritten mid-flight and the boundary would never settle.
+  test("it goes through Lenis rather than round it", () => {
+    renderHome();
+    scrollTo(300);
     settle();
     expect(window.scrollTo).not.toHaveBeenCalled();
   });
@@ -168,5 +196,27 @@ test("Back to top from the footer scrolls the page home", () => {
 
   act(() => { screen.getByRole("button", { name: /back to top/i }).click(); });
 
-  expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "instant" });
+  expect(currentLenis().scrollTo).toHaveBeenCalledWith(0, { immediate: true });
+});
+
+// Smoothing the scroll is motion like any other, and the one kind a reader
+// cannot opt out of by looking away.
+test("someone who asked for reduced motion gets the browser's own scroll back", () => {
+  const realMatchMedia = window.matchMedia;
+  window.matchMedia = (query) => ({
+    matches: true, media: query, onchange: null,
+    addEventListener: () => {}, removeEventListener: () => {},
+    addListener: () => {}, removeListener: () => {}, dispatchEvent: () => false,
+  });
+
+  try {
+    renderHome();
+    scrollTo(300);
+    act(() => { vi.advanceTimersByTime(200); });
+
+    expect(lenis.instances).toHaveLength(0);
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  } finally {
+    window.matchMedia = realMatchMedia;
+  }
 });
