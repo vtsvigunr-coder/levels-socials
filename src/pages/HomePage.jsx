@@ -97,14 +97,23 @@ export default function HomePage() {
     };
 
     // Past the last hijacked stage (FAQ), scrolling further down hands off to
-    // the browser's native scroll for CTA + Footer, for good — same discrete
-    // pinned jump as hero -> scroll-zone, just one-way. There's no scrolling
-    // back into the hijack from here; "Back to top" (Footer) is the only way
-    // back to Hero, via resetToHero below.
+    // the browser's native scroll for CTA + Footer — same discrete pinned
+    // jump as hero -> scroll-zone, just at the other end.
     const releaseScroll = () => {
       lockedRef.current = true;
       setStage(2);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
+    };
+    // Scrolling up from the very top of the released (native-scroll) content
+    // re-enters the hijacked zone — no lock/debounce here (unlike the other
+    // jumps above), and the same wheel tick's delta is applied immediately
+    // to vScroll, so this reads as one continuous scroll back through
+    // FAQ -> Testimonials -> ... rather than a separate, jarring step.
+    const reEnterZone = (dy) => {
+      setStage(1);
+      const nextV = Math.min(V_MAX, Math.max(0, vRef.current + dy / V_RANGE));
+      vRef.current = nextV;
+      setVScroll(nextV);
     };
 
     const applyDelta = (dy) => {
@@ -113,7 +122,10 @@ export default function HomePage() {
         if (dy > ENTER_THRESHOLD) enterZone();
         return;
       }
-      if (stageRef.current === 2) return; // native scroll, nothing to drive here
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && dy < 0) reEnterZone(dy);
+        return;
+      }
       // Ignore the trailing momentum of the gesture that just entered the
       // zone, so the next section only starts moving on a distinct, later
       // scroll — not as a continuation of the same fling that revealed it.
@@ -230,9 +242,16 @@ export default function HomePage() {
 
     const onWheel = (e) => {
       if (e.deltaY === 0) return;
-      // Stage 2 is native document scroll — leave every wheel tick alone for
-      // the browser to handle.
-      if (stageRef.current === 2) return;
+      // Stage 2 is native document scroll — only intercept scrolling up at
+      // the very top (re-enters the hijack); every other tick here is left
+      // alone for the browser to handle.
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && e.deltaY < 0) {
+          e.preventDefault();
+          applyDelta(e.deltaY);
+        }
+        return;
+      }
       e.preventDefault();
       applyDelta(e.deltaY);
     };
@@ -244,7 +263,10 @@ export default function HomePage() {
       const y = e.touches[0].clientY;
       const dy = touchY - y;
       touchY = y;
-      if (stageRef.current === 2) return; // native scroll
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && dy < 0) applyDelta(dy * 2.2);
+        return;
+      }
       applyDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
     };
 
