@@ -10,6 +10,8 @@ import GetStartedSection from "../sections/HowItWorks/GetStartedSection.jsx";
 import WhyLevelsSocialsSection from "../sections/WhyLevelsSocials/WhyLevelsSocialsSection.jsx";
 import TestimonialsSection from "../sections/Testimonials/TestimonialsSection.jsx";
 import FAQSection from "../sections/FAQ/FAQSection.jsx";
+import CTASection from "../sections/CTA/CTASection.jsx";
+import FooterSection from "../sections/Footer/FooterSection.jsx";
 import EXPLORE_PLATFORM_SLIDES from "../data/explorePlatform.js";
 import "./HomePage.css";
 
@@ -34,7 +36,7 @@ const V_MAX = 11; // 0 Providers, 1 Key Numbers, 2 Selection Standard, 3-6 Explo
 const rel = (p, stageIndex) => Math.min(1, Math.max(-1, p - stageIndex));
 
 export default function HomePage() {
-  const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal)
+  const [stage, setStage] = useState(0); // 0 = hero, 1 = scroll zone (vertical + horizontal), 2 = released (native scroll, CTA + Footer)
   const [vScroll, setVScroll] = useState(0); // 0..2, continuous position across Providers/Key Numbers/Selection Standard
   const [hScroll, setHScroll] = useState(0); // 0..1, horizontal position inside Selection Standard
   const [hScrollProviders, setHScrollProviders] = useState(0); // 0..1, horizontal position inside Providers
@@ -54,6 +56,15 @@ export default function HomePage() {
   useEffect(() => { hProvidersRef.current = hScrollProviders; }, [hScrollProviders]);
   useEffect(() => { hGetStartedRef.current = hScrollGetStarted; }, [hScrollGetStarted]);
   useEffect(() => { hWhyLevelsRef.current = hScrollWhyLevels; }, [hScrollWhyLevels]);
+
+  // Native scroll stays locked out (body overflow hidden) for the entire
+  // hijacked zone (stages 0/1) so the browser can't sneak past it via
+  // scrollbar drag or keyboard — only stage 2 (released, CTA + Footer) gets
+  // real document scroll.
+  useEffect(() => {
+    document.body.style.overflow = stage === 2 ? "" : "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [stage]);
 
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
@@ -75,10 +86,32 @@ export default function HomePage() {
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
 
+    // Past the last hijacked stage (FAQ), scrolling further down hands off to
+    // the browser's native scroll for CTA + Footer — same discrete pinned
+    // jump as hero <-> scroll-zone, just at the other end.
+    const releaseScroll = () => {
+      lockedRef.current = true;
+      setStage(2);
+      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
+    };
+    // Scrolling up from the very top of the released (native-scroll) content
+    // re-enters the hijacked zone, landing back on FAQ (vScroll is still at
+    // V_MAX from before release, so nothing else needs resetting).
+    const reEnterZone = () => {
+      lockedRef.current = true;
+      setStage(1);
+      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
+    };
+
     const applyDelta = (dy) => {
       if (stageRef.current === 0) {
         if (lockedRef.current) return;
         if (dy > ENTER_THRESHOLD) enterZone();
+        return;
+      }
+      if (stageRef.current === 2) {
+        if (lockedRef.current) return;
+        if (window.scrollY <= 0 && dy < -ENTER_THRESHOLD) reEnterZone();
         return;
       }
       // Ignore the trailing momentum of the gesture that just entered the
@@ -188,6 +221,7 @@ export default function HomePage() {
 
       if (nextV === vRef.current) {
         if (nextV === 0 && dy < -ENTER_THRESHOLD && !lockedRef.current) leaveZone();
+        else if (nextV === V_MAX && dy > ENTER_THRESHOLD && !lockedRef.current) releaseScroll();
         return;
       }
       vRef.current = nextV;
@@ -196,6 +230,16 @@ export default function HomePage() {
 
     const onWheel = (e) => {
       if (e.deltaY === 0) return;
+      // Stage 2 is native document scroll — only intercept the "scrolled
+      // back up to the very top" gesture that re-enters the hijacked zone;
+      // every other wheel tick here is left alone for the browser to handle.
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && e.deltaY < -ENTER_THRESHOLD) {
+          e.preventDefault();
+          applyDelta(e.deltaY);
+        }
+        return;
+      }
       e.preventDefault();
       applyDelta(e.deltaY);
     };
@@ -207,6 +251,10 @@ export default function HomePage() {
       const y = e.touches[0].clientY;
       const dy = touchY - y;
       touchY = y;
+      if (stageRef.current === 2) {
+        if (window.scrollY <= 0 && dy * 2.2 < -ENTER_THRESHOLD) applyDelta(dy * 2.2);
+        return;
+      }
       applyDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
     };
 
@@ -242,6 +290,7 @@ export default function HomePage() {
   const faqActive = vScroll > FAQ_STAGE - 0.5;
 
   return (
+    <>
     <main
       className="home"
       data-testid="home"
@@ -337,5 +386,8 @@ export default function HomePage() {
         <FAQSection active={faqActive} />
       </div>
     </main>
+    <CTASection />
+    <FooterSection />
+    </>
   );
 }
