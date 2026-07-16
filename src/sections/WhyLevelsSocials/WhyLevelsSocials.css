@@ -1,0 +1,95 @@
+.why {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  background: var(--bg-light, #f5f5f5);
+  color: var(--black);
+}
+.why__inner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+/* Header — centered, matches the Figma reference */
+.why__head { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 0 120px; text-align: center; }
+.why__intro { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.why__tag { display: flex; align-items: center; gap: 16px; font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; }
+.why__logoicon { width: 16px; height: 16px; }
+.why__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: var(--black); }
+.why__btn { background: var(--black); color: var(--white); }
+
+/* Carousel — full-bleed; first card starts 120px from the left, next peeks
+   off the right edge (clipped, not framed), matching the Providers layout. */
+.why__carousel { display: flex; flex-direction: column; gap: 40px; width: 100%; }
+.why__viewport { width: 100%; overflow: hidden; }
+.why__enter { transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+.why__track { display: flex; align-items: stretch; gap: 20px; padding: 0 120px; will-change: transform; }
+
+/* --- Staged entrance (triggered when this section becomes active) ---
+   1) header text rises up   2) card row slides in right -> left */
+.why__tag,
+.why__title,
+.why .cta-btn-wrap {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
+}
+.why__enter { opacity: 0; transform: translateX(60px); }
+
+.why[data-active="true"] .why__tag,
+.why[data-active="true"] .why__title,
+.why[data-active="true"] .cta-btn-wrap {
+  opacity: 1; transform: translateY(0);
+}
+.why[data-active="true"] .why__tag   { transition-delay: 0.1s; }
+.why[data-active="true"] .why__title { transition-delay: 0.17s; }
+.why[data-active="true"] .cta-btn-wrap { transition-delay: 0.24s; }
+.why[data-active="true"] .why__enter { opacity: 1; transform: translateX(0); transition-delay: 0.35s; }
+
+/* Each card's own text rises up from below, and its image slides in from the
+   right, staggered per card via the --i custom property set in JS. */
+.whycard__text { opacity: 0; transform: translateY(24px); transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+.whycard__image { opacity: 0; transform: translateX(40px); transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+.why[data-active="true"] .whycard__text {
+  opacity: 1; transform: translateY(0);
+  transition-delay: calc(0.45s + var(--i) * 0.12s);
+}
+.why[data-active="true"] .whycard__image {
+  opacity: 1; transform: translateX(0);
+  transition-delay: calc(0.55s + var(--i) * 0.12s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .why__tag, .why__title, .why .cta-btn-wrap, .why__enter,
+  .whycard__text, .whycard__image {
+    opacity: 1; transform: none; transition: none;
+  }
+}
+
+/* Card */
+.whycard {
+  width: 900px; flex: none;
+  background: var(--white); color: var(--black);
+  border-radius: 16px; padding: 32px;
+  display: flex; align-items: center; gap: 24px;
+  overflow: hidden;
+}
+.whycard__text { display: flex; flex-direction: column; gap: 12px; width: 280px; flex: none; }
+.whycard__title { font-family: var(--font-heading); font-weight: 500; font-size: 24px; line-height: 28px; letter-spacing: -0.02em; color: var(--black); }
+.whycard__desc { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #737373; }
+.whycard__image { width: 536px; height: 361px; flex: none; border-radius: 12px; object-fit: cover; }
+
+@media (max-width: 1000px) {
+  .why { padding: 40px 0; }
+  .why__head { padding: 0 20px; }
+  .why__track { padding: 0 20px; }
+  .whycard { width: 320px; flex-direction: column; align-items: flex-start; padding: 20px; gap: 16px; }
+  .whycard__text { width: 100%; }
+  .whycard__image { width: 100%; height: 200px; }
+}
