@@ -18,16 +18,29 @@ export default function CompanyMenu({ open, onClose, onMouseEnter }) {
         <motion.div
           className="company-menu-wrap"
           onMouseEnter={onMouseEnter}
-          // NOTE: no `scale` here. Scaling the wrapper scales its glass child,
-          // which forces the `backdrop-filter` to re-sample every frame and
-          // flashes the blur while the menu animates in. Opacity + y only keeps
-          // the backdrop stable so the glass never flickers on appearance.
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
+          // Only `y` lives on the wrapper. `opacity` must NOT: any ancestor
+          // below 1 opacity becomes a backdrop root, so the glass child would
+          // blur an empty layer instead of the page and only "find" the video
+          // once the fade landed on exactly 1 — the blur arriving late. An
+          // element's own opacity has no such effect, so the fade rides the
+          // glass itself, below. (No `scale` either: it re-samples the backdrop
+          // every frame and flashes the blur.)
+          initial={{ y: -8 }}
+          animate={{ y: 0 }}
+          exit={{ y: -8 }}
           transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          <GlassSurface as="ul" role="menu" className="company-menu" radius={16} blur={40}>
+          <GlassSurface
+            as={motion.ul}
+            role="menu"
+            className="company-menu"
+            radius={16}
+            blur={40}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          >
             {COMPANY_MENU.map((item) => (
               <li key={item.id} role="menuitem" tabIndex={0} className="menu-item">
                 <span

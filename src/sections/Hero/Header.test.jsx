@@ -27,3 +27,19 @@ test("opens the Company menu on hover and closes on leave", async () => {
   await userEvent.unhover(company);
   await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 });
+
+test.each(["Blog", "Help Center", "Contact"])(
+  "closes the Company menu when the pointer moves on to %s",
+  async (label) => {
+    renderHeader();
+    const company = screen.getByRole("button", { name: /company/i });
+    await userEvent.hover(company);
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+
+    // The pointer never leaves .nav-center on its way to a sibling link, so the
+    // hover-out timer alone would leave the menu hanging open over the nav.
+    await userEvent.hover(screen.getByText(label));
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+    expect(company).toHaveAttribute("aria-expanded", "false");
+  },
+);

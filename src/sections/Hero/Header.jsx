@@ -14,6 +14,10 @@ export default function Header() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     setMenuOpen(true);
   };
+  const close = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setMenuOpen(false);
+  };
   const scheduleClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setMenuOpen(false), 140);
@@ -47,9 +51,11 @@ export default function Header() {
               className={`nav-chevron ${menuOpen ? "is-open" : ""}`}
             />
           </button>
-          <Link to="/blog">Blog</Link>
-          <Link to="/help">Help Center</Link>
-          <Link to="/contact">Contact</Link>
+          {/* Reaching a sibling link never leaves .nav-center, so its
+              mouseleave never fires — each link closes the menu itself. */}
+          <Link to="/blog" onMouseEnter={close}>Blog</Link>
+          <Link to="/help" onMouseEnter={close}>Help Center</Link>
+          <Link to="/contact" onMouseEnter={close}>Contact</Link>
         </GlassSurface>
         <CompanyMenu open={menuOpen} onClose={() => setMenuOpen(false)} onMouseEnter={open} />
       </div>
