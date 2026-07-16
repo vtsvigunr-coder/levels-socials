@@ -196,6 +196,8 @@ on mobile.
 - ~~**`scroll-snap: proximity` on a long track** may fight the scroll~~ —
   confirmed, and worse than expected. See "Hero boundary" above: CSS snap is out
   entirely, the boundary is settled in JS.
-- **Scroll restoration changes behaviour**: the browser will now restore position
-  on reload, where F5 previously always returned to the hero. This is ordinary web
-  behaviour and is accepted.
+- ~~**Scroll restoration changes behaviour**~~ — resolved. Native scroll would
+  have let the browser restore a deep position on reload, where F5 previously
+  always returned to the hero. Keep the old behaviour: `main.jsx` sets
+  `history.scrollRestoration = "manual"` at module scope, which is ahead of the
+  moment the track renders and makes a deep scroll restorable at all.

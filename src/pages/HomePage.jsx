@@ -51,7 +51,7 @@ export default function HomePage() {
       if (!rafId) rafId = requestAnimationFrame(update);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    update(); // a reload can restore a scroll position; start from wherever we are
+    update(); // sync to wherever the page already sits, rather than assuming the top
     return () => {
       window.removeEventListener("scroll", onScroll);
       if (rafId) cancelAnimationFrame(rafId);
