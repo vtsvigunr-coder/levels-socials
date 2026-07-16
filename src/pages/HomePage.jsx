@@ -66,6 +66,16 @@ export default function HomePage() {
     return () => { document.body.style.overflow = ""; };
   }, [stage]);
 
+  // Footer's "Back to top" is the only way back to Hero once released into
+  // stage 2 (scrolling back up no longer re-enters the hijack — see
+  // releaseScroll below) — it resets every stage back to its start.
+  const resetToHero = () => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    vRef.current = 0; hRef.current = 0; hProvidersRef.current = 0; hGetStartedRef.current = 0; hWhyLevelsRef.current = 0;
+    setVScroll(0); setHScroll(0); setHScrollProviders(0); setHScrollGetStarted(0); setHScrollWhyLevels(0);
+    setStage(0);
+  };
+
   useEffect(() => {
     // Hero <-> scroll-zone is still a discrete pinned jump (debounced so one
     // gesture can't skip past it). Once inside the zone, sections never fade
@@ -87,19 +97,13 @@ export default function HomePage() {
     };
 
     // Past the last hijacked stage (FAQ), scrolling further down hands off to
-    // the browser's native scroll for CTA + Footer — same discrete pinned
-    // jump as hero <-> scroll-zone, just at the other end.
+    // the browser's native scroll for CTA + Footer, for good — same discrete
+    // pinned jump as hero -> scroll-zone, just one-way. There's no scrolling
+    // back into the hijack from here; "Back to top" (Footer) is the only way
+    // back to Hero, via resetToHero below.
     const releaseScroll = () => {
       lockedRef.current = true;
       setStage(2);
-      setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
-    };
-    // Scrolling up from the very top of the released (native-scroll) content
-    // re-enters the hijacked zone, landing back on FAQ (vScroll is still at
-    // V_MAX from before release, so nothing else needs resetting).
-    const reEnterZone = () => {
-      lockedRef.current = true;
-      setStage(1);
       setTimeout(() => { lockedRef.current = false; }, LOCK_MS);
     };
 
@@ -109,11 +113,7 @@ export default function HomePage() {
         if (dy > ENTER_THRESHOLD) enterZone();
         return;
       }
-      if (stageRef.current === 2) {
-        if (lockedRef.current) return;
-        if (window.scrollY <= 0 && dy < -ENTER_THRESHOLD) reEnterZone();
-        return;
-      }
+      if (stageRef.current === 2) return; // native scroll, nothing to drive here
       // Ignore the trailing momentum of the gesture that just entered the
       // zone, so the next section only starts moving on a distinct, later
       // scroll — not as a continuation of the same fling that revealed it.
@@ -230,16 +230,9 @@ export default function HomePage() {
 
     const onWheel = (e) => {
       if (e.deltaY === 0) return;
-      // Stage 2 is native document scroll — only intercept the "scrolled
-      // back up to the very top" gesture that re-enters the hijacked zone;
-      // every other wheel tick here is left alone for the browser to handle.
-      if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && e.deltaY < -ENTER_THRESHOLD) {
-          e.preventDefault();
-          applyDelta(e.deltaY);
-        }
-        return;
-      }
+      // Stage 2 is native document scroll — leave every wheel tick alone for
+      // the browser to handle.
+      if (stageRef.current === 2) return;
       e.preventDefault();
       applyDelta(e.deltaY);
     };
@@ -251,10 +244,7 @@ export default function HomePage() {
       const y = e.touches[0].clientY;
       const dy = touchY - y;
       touchY = y;
-      if (stageRef.current === 2) {
-        if (window.scrollY <= 0 && dy * 2.2 < -ENTER_THRESHOLD) applyDelta(dy * 2.2);
-        return;
-      }
+      if (stageRef.current === 2) return; // native scroll
       applyDelta(dy * 2.2); // touch moves are smaller per-event than wheel ticks
     };
 
@@ -387,7 +377,7 @@ export default function HomePage() {
       </div>
     </main>
     <CTASection />
-    <FooterSection />
+    <FooterSection onBackToTop={resetToHero} />
     </>
   );
 }

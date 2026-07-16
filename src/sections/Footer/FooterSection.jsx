@@ -6,11 +6,7 @@ const NAV_LINKS = ["About", "How It Works", "Strategy Providers", "Affiliates"];
 const RESOURCE_LINKS = ["Platform", "Blog", "Help Center", "Contact"];
 const LEGAL_LINKS = ["Terms of Use", "Privacy Policy", "Cookies Policy"];
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-export default function FooterSection() {
+export default function FooterSection({ onBackToTop }) {
   return (
     <footer className="footer">
       <div className="footer__links">
@@ -65,7 +61,7 @@ export default function FooterSection() {
             <p key={label} className="footer__legallink">{label}</p>
           ))}
         </div>
-        <button type="button" className="footer__totop" onClick={scrollToTop}>
+        <button type="button" className="footer__totop" onClick={onBackToTop}>
           Back to top
           <img className="footer__totopicon" src={arrowDown} alt="" aria-hidden="true" />
         </button>
