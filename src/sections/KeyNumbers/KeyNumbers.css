@@ -4,7 +4,14 @@
 .keynum {
   height: 100%;
   background: #fff;
-  padding: 48px 120px;
+  /* clamp(), not a flat 48px: this section is pinned to exactly 100vh (see
+     .home__viewport) with no scroll fallback, and at 100% zoom its content
+     already sits close to that limit. Browser zoom shrinks 100vh in CSS px
+     (110% zoom ~= 10% less), so a fixed 48px padding was the first thing to
+     get silently swallowed by the section's own overflow:hidden — the
+     bottom margin (and the CTA below it) would vanish before anything else
+     did. Letting the padding compress first buys the cards room instead. */
+  padding: clamp(20px, 5vh, 48px) 120px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -36,7 +43,7 @@
    120px side margins as the heading text above, instead of sitting narrower. */
 .keynum__cards {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-  width: 100%; max-width: 1200px; margin: 40px auto 0;
+  width: 100%; max-width: 1200px; margin: clamp(20px, 4vh, 40px) auto 0;
 }
 
 .kn-card {
@@ -188,7 +195,13 @@
 .kn-card--investors:hover .kn-card__pillicon-img--color { opacity: 1; }
 
 /* --- CTA --- */
-.keynum__cta { justify-content: center; margin-top: 40px; }
+/* width: fit-content (not justify-content: center on a full-width row): a
+   flex container's own box is hoverable across its whole area even past its
+   children, so a full-width row made the arrow pop on hover anywhere along
+   that row, not just over the button. Shrinking to content and centering the
+   box itself keeps the same visual position but makes only the button+dot
+   hoverable. */
+.keynum__cta { width: fit-content; margin: clamp(20px, 4vh, 40px) auto 0; }
 
 /* --- entrance: once scrolled far enough into Key Numbers, the texts and
    cards rise up into their positions. The section itself is already fully

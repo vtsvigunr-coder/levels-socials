@@ -62,11 +62,13 @@
   font-size: 50px; line-height: 60px; letter-spacing: -0.03em;
   display: flex; flex-direction: column;
 }
-.hero-line { display: block; overflow: hidden; }
+/* Padding/negative-margin buffer so the mask doesn't clip Onest's glyphs at
+   this line-height — see the shared reveal-lines.css for the full reasoning. */
+.hero-line { display: block; overflow: hidden; margin: -4px 0; padding: 4px 0; }
 
 .hero-cta { position: absolute; right: 120px; bottom: 70px; width: 372px; display: flex; flex-direction: column; gap: 36px; align-items: flex-start; }
 .hero-lead { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; }
-.hero-lead-line { display: block; overflow: hidden; }
+.hero-lead-line { display: block; overflow: hidden; margin: -4px 0; padding: 4px 0; }
 /* .cta-btn-wrap / .gradient-dot are shared across sections and live with the
    component that renders them — see src/components/GradientDot.css */
 

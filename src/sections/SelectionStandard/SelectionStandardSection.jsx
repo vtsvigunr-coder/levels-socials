@@ -150,11 +150,13 @@ function SelectionStandardSection({ active = false, progress = 0 }) {
             Selection Standard
           </motion.div>
           <motion.h2 className="selstd__title" variants={lineContainer(0.06)} initial="hidden" animate={animate}>
-            <span className="reveal-line">
-              <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
-                Only Selected Providers Reach the Platform
-              </motion.span>
-            </span>
+            {["Only Selected Providers", "Reach the Platform"].map((line) => (
+              <span className="reveal-line" key={line}>
+                <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
+                  {line}
+                </motion.span>
+              </span>
+            ))}
           </motion.h2>
         </div>
         <motion.p className="selstd__lead" variants={lineContainer(0.06)} initial="hidden" animate={animate}>

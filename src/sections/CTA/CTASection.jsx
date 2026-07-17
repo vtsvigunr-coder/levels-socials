@@ -22,9 +22,9 @@ function CTASection({ active = false }) {
           as="h2"
           className="cta__title"
           lines={[
+            "Connect to Proven Strategy Providers",
             <>
-              Connect to Proven Strategy Providers with{" "}
-              <span className="cta__titleaccent">Full Data Visibility</span>
+              with <span className="cta__titleaccent">Full Data Visibility</span>
             </>,
           ]}
           baseDelay={0.12}

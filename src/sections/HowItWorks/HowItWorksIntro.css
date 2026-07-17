@@ -5,7 +5,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  /* clamp(): pinned to exactly 100vh with no scroll fallback — see the note
+     on .keynum in KeyNumbers.css. */
+  padding: clamp(24px, 6vh, 60px) 0;
   color: var(--white);
   overflow: hidden;
 }

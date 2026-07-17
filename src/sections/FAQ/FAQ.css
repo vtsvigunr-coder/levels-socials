@@ -11,7 +11,9 @@
      itself grows or shrinks; nothing above or beside it moves. */
   align-items: flex-start;
   justify-content: center;
-  padding: 100px 0;
+  /* clamp(): pinned to exactly 100vh with no scroll fallback — see the note
+     on .keynum in KeyNumbers.css. */
+  padding: clamp(32px, 8vh, 100px) 0;
   background: var(--white);
   color: var(--black);
 }
@@ -30,7 +32,12 @@
 .faq__logoicon { width: 16px; height: 16px; }
 .faq__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: var(--black); }
 
-.faq__cta { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; width: 229px; flex: none; padding: 24px; border-radius: 16px; background: #F1F1F1; margin-top: 242px; box-sizing: border-box; }
+/* Width is Figma's 229px + 32px: the GradientDot arrow grows from a 4px dot
+   to a 36px square on hover (see GradientDot.css), and the button already
+   ran right up against this card's own 24px padding, so the +32px growth
+   had nowhere to go but past the card's edge. The extra width gives it
+   exactly that much room, without touching the left-aligned padding/text. */
+.faq__cta { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; width: 261px; flex: none; padding: 24px; border-radius: 16px; background: #F1F1F1; margin-top: 242px; box-sizing: border-box; }
 .faq__ctaicon { width: 24px; height: 24px; }
 .faq__ctaheading { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--black); width: 175px; }
 .faq__ctatext { font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; width: 175px; margin-top: -20px; }

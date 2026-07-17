@@ -44,7 +44,7 @@ export function useSmoothScroll(enabled) {
 // the scroll position and rewrites it every frame, so a native
 // `window.scrollTo({behavior:"smooth"})` would be fought and dropped; when Lenis
 // is off (reduced motion), the native call is all there is.
-export function scrollToY(lenis, top, { immediate = false } = {}) {
-  if (lenis) lenis.scrollTo(top, { immediate });
+export function scrollToY(lenis, top, { immediate = false, duration } = {}) {
+  if (lenis) lenis.scrollTo(top, { immediate, ...(duration != null ? { duration } : {}) });
   else window.scrollTo({ top, behavior: immediate ? "instant" : "smooth" });
 }

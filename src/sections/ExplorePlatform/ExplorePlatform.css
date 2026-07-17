@@ -1,7 +1,9 @@
+/* clamp() on padding/gap: pinned to exactly 100vh with no scroll fallback —
+   see the note on .keynum in KeyNumbers.css. */
 .xp-slide {
   position: relative; width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  padding: 120px; gap: 190px;
+  padding: clamp(32px, 8vh, 120px) clamp(40px, 8vw, 120px); gap: clamp(40px, 10vw, 190px);
   background: #F5F5F5; color: var(--black);
 }
 .xp-slide--card-left { flex-direction: row-reverse; }
@@ -17,14 +19,19 @@
   font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px;
   letter-spacing: -0.03em; display: flex; flex-direction: column;
 }
-.xp-slide__line { display: block; overflow: hidden; }
+/* Padding/negative-margin buffer so the mask doesn't clip Onest's glyphs at
+   this line-height — see the shared reveal-lines.css for the full reasoning. */
+.xp-slide__line { display: block; overflow: hidden; margin: -4px 0; padding: 4px 0; }
 .xp-slide__accent { color: var(--accent); }
 
 .xp-slide__ctawrap { display: flex; flex-direction: column; gap: 36px; align-items: flex-start; max-width: 387px; }
 .xp-slide__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #737373; }
 
+/* min(): same 100vh-pinned-with-no-scroll-fallback reasoning as the padding
+   above — a flat 590px could exceed the available height on a short/zoomed
+   viewport before the section's own overflow:hidden clips it. */
 .xp-slide__card {
-  flex: none; width: 590px; height: 590px; border-radius: 16px; overflow: hidden; position: relative;
+  flex: none; width: min(590px, 60vh); height: min(590px, 60vh); border-radius: 16px; overflow: hidden; position: relative;
 }
 
 /* Shared by all 4 card components (SixPlusCard, EarnedAccessCard,
