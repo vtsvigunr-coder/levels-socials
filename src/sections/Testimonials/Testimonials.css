@@ -5,11 +5,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  /* clamp(): pinned to exactly 100vh with no scroll fallback — see the note
+     on .keynum in KeyNumbers.css. */
+  padding: clamp(24px, 6vh, 60px) 0;
   background: var(--white);
   color: var(--black);
 }
-.testimonials__inner { width: 100%; display: flex; flex-direction: column; gap: 72px; }
+.testimonials__inner { width: 100%; display: flex; flex-direction: column; gap: clamp(32px, 6vh, 72px); }
 
 /* Header — matches the Figma reference: tag above, title + lead side by side */
 .testimonials__head { display: flex; flex-direction: column; gap: 12px; width: 100%; padding: 0 120px; }

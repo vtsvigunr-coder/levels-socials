@@ -17,7 +17,7 @@ export const CTA_LINES = [
   "complete capital control.",
 ];
 
-export default function Hero() {
+export default function Hero({ onExploreMore }) {
   const reduced = useReducedMotion();
   const ease = [0.22, 1, 0.36, 1];
 
@@ -77,6 +77,10 @@ export default function Hero() {
       <motion.a
         className="hero-explore"
         href="#next"
+        onClick={(e) => {
+          e.preventDefault();
+          onExploreMore?.();
+        }}
         variants={rise}
         initial="hidden"
         animate="show"

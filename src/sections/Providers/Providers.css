@@ -5,14 +5,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 100px 0;
+  /* clamp(), not a flat 100px: this stage is pinned to exactly 100vh with no
+     scroll fallback (see .home__viewport), so anything taller than that gets
+     silently clipped by its overflow:hidden. Browser zoom shrinks 100vh in
+     CSS px, and a fixed 100px padding was the first thing to disappear —
+     see the longer version of this note on .keynum in KeyNumbers.css. */
+  padding: clamp(32px, 8vh, 100px) 0;
   color: var(--white);
 }
 .providers__inner {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 72px;
+  gap: clamp(32px, 6vh, 72px);
 }
 
 /* Header — inset to align with the first card's 120px left edge */
@@ -38,8 +43,15 @@
   /* Design gives this a wider 80px gap from the last card than the 20px
      between cards — track's `gap` covers 20px of it, this covers the rest. */
   margin-left: 60px;
+  transition: color 0.2s ease;
 }
-.providers__finalctaicon { width: 12px; height: 17px; transform: rotate(90deg); }
+.providers__finalcta:hover { color: #BEBEBE; }
+/* The icon is a plain <img>, not inlined — CSS `color` can't reach its SVG
+   stroke (hardcoded "white"), so it's retinted the same way the Key Numbers
+   card icons crossfade between colors: a filter. brightness(0.7451) maps
+   white (255) to 190 in each channel, i.e. exactly #BEBEBE. */
+.providers__finalctaicon { width: 12px; height: 17px; transform: rotate(90deg); transition: filter 0.2s ease; }
+.providers__finalcta:hover .providers__finalctaicon { filter: brightness(0.7451); }
 
 /* --- Staged entrance (triggered once the hero hands off) ---
    1) background blurs (HomePage.css)  2) text rises up  3) cards slide in R->L
@@ -99,13 +111,24 @@
 .risk--medium .risk__dot { background: var(--accent); }
 
 .pcard__profile { display: flex; align-items: flex-end; gap: 2px; flex: none; }
-/* Here the dot leads the button rather than trailing it, so the hover shape
-   is mirrored against GradientDot.css's default. */
-.pcard__profile:hover .gradient-dot {
-  width: auto; height: auto; align-self: stretch; aspect-ratio: 1 / 1;
+/* Here the dot leads the button rather than trailing it, so the blob grows
+   from the opposite corner and the icon sits on the opposite side, mirrored
+   against GradientDot.css's default (see the comment there). Sized to this
+   card's own 32px .pcard__profilebtn instead of the 36px default (Figma's
+   "Btn" size, meant for the taller buttons elsewhere) — the arrow was
+   visibly larger than the button it sits next to. The icon itself stays the
+   shared 20px/5px-padding box (see GradientDot.css); only its centering
+   offset changes for the smaller 32px blob. */
+.pcard__profile .gradient-dot__blob {
+  left: auto; right: 0; width: 32px; height: 32px;
+  transform: scale(0.125); transform-origin: right bottom;
+}
+.pcard__profile .gradient-dot__icon { left: auto; right: 6px; bottom: 6px; }
+.pcard__profile:hover .gradient-dot__blob {
+  transform: scale(1);
   border-radius: 500px 500px 12px 500px;
 }
-.pcard__profile:hover .gradient-dot__icon { opacity: 1; transform: scale(1); }
+.pcard__profile:hover .gradient-dot__icon { opacity: 1; transform: scale(1); transition-delay: 0.15s; }
 .pcard__profilebtn {
   background: var(--black); color: var(--white);
   height: 32px; padding: 12px 16px 12px 24px;

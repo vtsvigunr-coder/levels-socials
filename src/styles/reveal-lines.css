@@ -4,7 +4,13 @@
    in place. Sections wire their own entrance-trigger selector (their
    existing `data-active`/`data-*-active` attribute) and per-line
    transition-delay on top of this shared shape. */
-.reveal-line { display: block; overflow: hidden; }
+/* The overflow:hidden mask clips to exactly `line-height`, but Onest's
+   rendered glyphs run a few px taller than these headings' line-heights (e.g.
+   50px scroll height at 42px/46px — measured, not guessed), so ascenders and
+   descenders were getting cut off at the mask's top and bottom edges. Padding
+   gives the mask room to fully contain the glyphs; the equal negative margin
+   cancels it back out so line spacing and section layout don't shift. */
+.reveal-line { display: block; overflow: hidden; margin: -4px 0; padding: 4px 0; }
 .reveal-line__inner {
   display: block;
   opacity: 0;

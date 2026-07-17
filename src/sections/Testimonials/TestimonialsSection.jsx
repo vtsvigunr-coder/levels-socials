@@ -33,7 +33,7 @@ function TestimonialsSection({ active = false }) {
             <RevealLines
               as="h2"
               className="testimonials__title"
-              lines={["See Every Trade Clearly and Keep Capital Control"]}
+              lines={["See Every Trade Clearly", "and Keep Capital Control"]}
               baseDelay={0.17}
             />
             <RevealLines

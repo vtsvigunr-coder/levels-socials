@@ -6,29 +6,58 @@
 .cta-btn-wrap { display: flex; align-items: flex-end; gap: 3px; }
 
 /* Small orange dot that sits at a button's sharp notch corner. On hover it
-   grows into a square (matching the button's own rendered height, via flex
-   stretch + aspect-ratio, no hardcoded size) and reveals an arrow — same
-   interaction as the Figma "Hovered" button variants. Default corner radii
-   assume the dot trails the button (sharp corner on its own bottom-left,
-   against the button's right edge); Providers' .pcard__profile mirrors this
-   since there the dot leads the button instead (see Providers.css). */
-.gradient-dot {
-  width: 4px; height: 4px; border-radius: 500px; background: var(--grad-orange); flex: none;
-  display: grid; place-items: center; overflow: hidden;
-  transition: width 0.25s cubic-bezier(0.22,1,0.36,1), height 0.25s cubic-bezier(0.22,1,0.36,1),
-    border-radius 0.25s cubic-bezier(0.22,1,0.36,1);
+   inflates — like a balloon — into a square matching the paired button's own
+   height (36px — Figma's "Btn" size, e.g. Hero/CTA/Key Numbers' .btn--start)
+   and reveals an arrow. Providers' card buttons are shorter (32px), so
+   .pcard__profile overrides the blob/icon-offset sizing to match that
+   instead (see Providers.css) — every other instance uses this default.
+   `.gradient-dot` itself never resizes (always the original 4x4 footprint,
+   still a real flex sibling) — only `.gradient-dot__blob`, an absolutely
+   positioned layer anchored to the same corner, changes, and only via
+   `transform: scale()` + `border-radius`. Neither is a layout property, so
+   this never triggers reflow: the button never shifts and nothing around it
+   jumps, at rest or mid-animation. (An earlier version animated width/height
+   instead, which did both — turning `auto` into a snap instead of a grow,
+   and reflowing the flex row on every frame.) The icon is a sibling of the
+   blob, not a descendant, positioned at a fixed offset that already matches
+   its centered spot in the grown blob — so it stays crisp instead of
+   inheriting the blob's scale.
+   Default anchor assumes the dot trails the button (grows up-right from its
+   bottom-left corner, against the button's right edge); Providers'
+   .pcard__profile mirrors this since there the dot leads the button instead
+   (see Providers.css). */
+.gradient-dot { position: relative; width: 4px; height: 4px; flex: none; }
+.gradient-dot__blob {
+  position: absolute; left: 0; bottom: 0; width: 36px; height: 36px;
+  background: var(--grad-orange); border-radius: 500px;
+  transform: scale(0.1111); transform-origin: left bottom;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .gradient-dot__icon {
-  width: 20px; height: 20px; flex: none; opacity: 0; transform: scale(0.4);
-  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.22,1,0.36,1);
+  /* The box stays the Figma-spec 20px (offset to center in the 36px blob
+     above), but 5px of padding shrinks what actually renders inside it to
+     10px — visually smaller without changing the box's own footprint or its
+     centering math. box-sizing: border-box is what makes that padding eat
+     into the 20px instead of adding to it: with the default content-box, an
+     <img>'s padding sits *outside* its pixel content and just adds to the
+     total size instead of insetting it, so it wouldn't shrink anything.
+     Percentage max-width (global img reset) resolves against the absolute
+     containing block — .gradient-dot, still just 4px — so it must be undone
+     here or it clamps the icon down to that instead of the true 20px. */
+  position: absolute; left: 8px; bottom: 8px; width: 20px; height: 20px;
+  box-sizing: border-box; padding: 5px; max-width: none;
+  opacity: 0; transform: scale(0.3);
+  transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.cta-btn-wrap:hover .gradient-dot {
-  width: auto; height: auto; align-self: stretch; aspect-ratio: 1 / 1;
+.cta-btn-wrap:hover .gradient-dot__blob {
+  transform: scale(1);
   border-radius: 500px 500px 500px 12px;
 }
 .cta-btn-wrap:hover .gradient-dot__icon {
   opacity: 1; transform: scale(1);
+  transition-delay: 0.15s;
 }
 @media (prefers-reduced-motion: reduce) {
-  .gradient-dot, .gradient-dot__icon { transition: none; }
+  .gradient-dot__blob, .gradient-dot__icon { transition: none; }
 }

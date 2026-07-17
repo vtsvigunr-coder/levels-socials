@@ -11,8 +11,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 80px;
-  padding: 100px 120px;
+  /* clamp(), not flat values: see the note on .keynum in KeyNumbers.css —
+     this stage is pinned to exactly 100vh with no scroll fallback, so a
+     fixed gap/padding is the first thing zoom (or any short viewport)
+     silently clips instead of shrinking. */
+  gap: clamp(32px, 8vh, 80px);
+  padding: clamp(32px, 8vh, 100px) 120px;
   overflow: hidden;
   background: color-mix(in srgb, #141414, #ffffff calc(var(--theme-t) * 100%));
   color: color-mix(in srgb, #ffffff, #000000 calc(var(--theme-t) * 100%));

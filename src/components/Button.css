@@ -19,6 +19,7 @@
 .btn--accent { background: var(--accent); color: var(--white); }
 .btn--ghost { background: transparent; color: var(--white); }
 .btn--glass {
+  position: relative;
   color: var(--white);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -28,4 +29,25 @@
   /* Pre-composite the blur layer so it doesn't pop in late (see GlassSurface.css). */
   will-change: backdrop-filter;
   transform: translateZ(0);
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+}
+/* A `background` transition can't animate a solid color into
+   `--grad-orange` (a gradient) — background-image values don't interpolate,
+   so it would just snap instead of fading. Crossfading a separate gradient
+   layer's opacity does, same trick as the Key Numbers card icons
+   (see KeyNumbers.css's white/color icon pairs). */
+.btn--glass::before {
+  /* Negative z-index: paints above the button's own background but below
+     its (unwrapped, un-positionable) text content — see stacking-context
+     ordering — without needing to wrap the label in an element. */
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; background: var(--grad-orange);
+  opacity: 0; transition: opacity 0.25s ease; pointer-events: none;
+}
+.btn--glass:hover::before { opacity: 1; }
+.btn--glass:hover {
+  border-color: transparent;
+  box-shadow: none;
+  opacity: 1;
 }

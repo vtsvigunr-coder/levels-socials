@@ -95,10 +95,20 @@ export default function HomePage() {
     };
   }, [lenisRef]);
 
-  // Footer's "Back to top". useCallback keeps the reference stable so the
-  // memoized Footer doesn't re-render on every scroll tick.
+  // Footer's "Back to top" — an eased scroll like the rest of the page, just
+  // quicker given the distance involved (the track can be ~18000px). A
+  // straight jump (the old `immediate: true`) skipped the animation
+  // entirely, which read as the page silently teleporting instead of
+  // scrolling back. useCallback keeps the reference stable so the memoized
+  // Footer doesn't re-render on every scroll tick.
   const resetToHero = useCallback(() => {
-    scrollToY(lenisRef.current, 0, { immediate: true });
+    scrollToY(lenisRef.current, 0, { duration: 0.8 });
+  }, [lenisRef]);
+
+  // "Explore more" hands off from the hero to Providers, the next section on
+  // the timeline — same eased scroll the rest of the page already uses.
+  const exploreNext = useCallback(() => {
+    scrollToY(lenisRef.current, HERO_EXIT_PX);
   }, [lenisRef]);
 
   const { heroExit, vScroll, hProviders, hSelection, hGetStarted, hWhyLevels } = scroll;
@@ -164,7 +174,7 @@ export default function HomePage() {
           </div>
 
           <div className="home__stage home__stage--hero" aria-hidden={heroExited}>
-            <Hero />
+            <Hero onExploreMore={exploreNext} />
           </div>
 
           <div

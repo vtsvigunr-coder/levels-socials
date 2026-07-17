@@ -29,7 +29,7 @@ function FAQSection({ active = false }) {
               <img className="faq__logoicon" src={logoIcon} alt="" aria-hidden="true" />
               FAQs
             </div>
-            <RevealLines as="h2" className="faq__title" lines={["Frequently Asked Questions"]} baseDelay={0.17} />
+            <RevealLines as="h2" className="faq__title" lines={["Frequently Asked", "Questions"]} baseDelay={0.17} />
           </div>
 
           <div className="faq__cta">
