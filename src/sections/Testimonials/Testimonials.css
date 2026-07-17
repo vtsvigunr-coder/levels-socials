@@ -17,7 +17,7 @@
 .testimonials__logoicon { width: 16px; height: 16px; }
 .testimonials__headtext { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; width: 100%; }
 .testimonials__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: var(--black); max-width: 517px; }
-.testimonials__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #737373; max-width: 285px; text-align: right; }
+.testimonials__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #737373; max-width: 285px; text-align: left; }
 
 /* Carousel */
 .testimonials__carousel { display: flex; flex-direction: column; gap: 40px; width: 100%; }
@@ -45,22 +45,22 @@
 .testimonials__arrowbtn:disabled { opacity: 0.35; cursor: default; }
 
 /* --- Staged entrance (triggered when this section becomes active) --- */
-.testimonials__tag,
-.testimonials__title,
-.testimonials__lead {
+.testimonials__tag {
   opacity: 0; transform: translateY(24px);
   transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 .testimonials__enter { opacity: 0; transform: translateX(60px); }
 
-.testimonials[data-active="true"] .testimonials__tag,
-.testimonials[data-active="true"] .testimonials__title,
-.testimonials[data-active="true"] .testimonials__lead {
+.testimonials[data-active="true"] .testimonials__tag {
+  opacity: 1; transform: translateY(0);
+}
+/* Title/lead lines animate via RevealLines (own per-line transition-delay,
+   see TestimonialsSection.jsx) — this just flips their masked state on. */
+.testimonials[data-active="true"] .testimonials__title .reveal-line__inner,
+.testimonials[data-active="true"] .testimonials__lead .reveal-line__inner {
   opacity: 1; transform: translateY(0);
 }
 .testimonials[data-active="true"] .testimonials__tag   { transition-delay: 0.1s; }
-.testimonials[data-active="true"] .testimonials__title { transition-delay: 0.17s; }
-.testimonials[data-active="true"] .testimonials__lead  { transition-delay: 0.17s; }
 .testimonials[data-active="true"] .testimonials__enter { opacity: 1; transform: translateX(0); transition-delay: 0.35s; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -80,7 +80,7 @@
 .tcard__top { display: flex; flex-direction: column; gap: 48px; }
 .tcard__quote { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--black); max-width: 364px; }
 
-.starrating { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.2); }
+.starrating { box-sizing: border-box; display: inline-flex; align-items: center; justify-content: flex-start; gap: 8px; width: 162px; height: 42px; padding: 0 16px; flex: none; }
 .starrating__value { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--black); }
 .starrating__stars { display: flex; align-items: center; gap: 2px; }
 .starrating__star { width: 18px; height: 18px; }
@@ -88,7 +88,7 @@
 .tcard__bottom { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .tcard__author {
   display: inline-flex; align-items: center; gap: 4px;
-  height: 32px; padding: 4px 4px 4px 18px; border-radius: 16px; background: var(--accent);
+  height: 32px; padding: 4px 0 4px 18px; border-radius: 16px; background: var(--accent);
 }
 .tcard__name, .tcard__role { font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: var(--white); white-space: nowrap; }
 .tcard__dot { width: 4px; height: 4px; border-radius: 50%; background: var(--white); flex: none; }

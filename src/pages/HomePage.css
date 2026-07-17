@@ -71,6 +71,19 @@ html::-webkit-scrollbar { display: none; }
 .home__stage--providers { z-index: 3; }
 .home__stage--keynumbers { z-index: 4; }
 .home__stage--selection { z-index: 5; }
+/* The 4 dashboard1..4 slides stack as separate translateY'd stages so each
+   can slide fully in/out on its own, but they're meant to read as one
+   continuous run. Subpixel rounding in the translateY(%) transforms can
+   leave a hairline gap between two adjacent stages for a frame; giving this
+   wrapper the same background as .xp-slide means that gap shows the same
+   flat color instead of flashing whatever's underneath (the video/hero
+   layer), so the seam never actually reads as a seam. */
+.home__stage--explore { background: #F5F5F5; }
+/* Same hairline-gap fix as .home__stage--explore above, for the white-on-white
+   pair of stages that follow it: without a matching background here, the
+   subpixel gap between Testimonials sliding out and FAQ sliding in flashes
+   whatever's behind them (dark) as a thin line across the seam. */
+.home__stage--testimonials, .home__stage--faq { background: var(--white); }
 .home__stage:not(.home__stage--hero) { opacity: calc(var(--hero-exit) * 2 - 1); }
 
 .home[data-hero-exited="false"] .home__stage--hero { pointer-events: auto; }

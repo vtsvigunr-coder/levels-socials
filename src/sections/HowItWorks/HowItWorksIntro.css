@@ -8,23 +8,18 @@
   padding: 60px 0;
   color: var(--white);
   overflow: hidden;
-  background: var(--black);
 }
-/* Crops the top (rows 0-750 of 1605) of the shared background rectangle
-   behind both "How it Works" and "Get Started" (Figma node 799:15809, a
-   single 1443x1605 image positioned at -8.31%/-23.77%, sized 109.452%/
-   175.584% of that combined box). Scaled here to this section's own box:
-   height% = 175.584% * (1605/750), top% = -23.77% * (1605/750). */
-.hiw-intro__bg {
-  position: absolute; inset: 0; overflow: hidden;
-  z-index: 0; pointer-events: none;
-}
-.hiw-intro__bgimg {
-  position: absolute; left: -8.31%; top: -50.862%;
-  width: 109.452%; height: 375.816%; max-width: none;
-}
+/* Shared with GetStartedSection's own copy of these three rules (see the
+   comment in HowItWorksSection.jsx) — this section clips to the top half
+   of the doubled-height image box, the other section clips to the bottom
+   half, so together they read as one photo with zero JS and zero
+   scroll-driven movement. */
+.hiw-bg-clip { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.hiw-bg-inner { position: absolute; left: 0; right: 0; height: 200%; }
+.hiw-bg-inner--top { top: 0; }
+.hiw-bg-inner__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .hiw-intro__bggradient {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: radial-gradient(42.17% 57.25% at 51.49% 70.22%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.92) 100%);
 }
 
@@ -33,3 +28,11 @@
 .hiw-intro__tagicon { width: 16px; height: 16px; }
 .hiw-intro__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; }
 .hiw-intro__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; max-width: 543px; }
+
+/* Title/lead lines animate via RevealLines (own per-line transition-delay,
+   see HowItWorksSection.jsx) — this just flips their masked state on once
+   the section becomes active. */
+.hiw-intro[data-active="true"] .hiw-intro__title .reveal-line__inner,
+.hiw-intro[data-active="true"] .hiw-intro__lead .reveal-line__inner {
+  opacity: 1; transform: translateY(0);
+}

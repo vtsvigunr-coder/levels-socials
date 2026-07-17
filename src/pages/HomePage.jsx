@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BackgroundVideo from "../sections/Hero/BackgroundVideo.jsx";
 import Hero from "../sections/Hero/Hero.jsx";
 import ProvidersSection from "../sections/Providers/ProvidersSection.jsx";
@@ -104,8 +104,20 @@ export default function HomePage() {
   const { heroExit, vScroll, hProviders, hSelection, hGetStarted, hWhyLevels } = scroll;
   const heroExited = heroExit > HERO_HANDOFF;
 
-  const knActive = rel(vScroll, 1) > -0.88 && vScroll < 1.9;
-  const selectionActive = vScroll > 1.5;
+  // Each section's micro-entrance (tag/title/lead rising in, cards fading up)
+  // is meant to play once and hold — not reverse when a scroll-up carries the
+  // stage's own `*Active` flag back below its threshold. `sticky` latches a
+  // flag the first time it's true and never lets it go false again; the
+  // *stage* itself still slides fully off-screen and back via its own `*Rel`
+  // transform + `aria-hidden`, so nothing stays visible past its section.
+  const stickyRef = useRef({});
+  const sticky = (key, value) => {
+    if (value) stickyRef.current[key] = true;
+    return stickyRef.current[key] === true;
+  };
+
+  const knActive = sticky("kn", rel(vScroll, 1) > -0.88 && vScroll < 1.9);
+  const selectionActive = sticky("selection", vScroll > 1.5);
   const bgRel = rel(vScroll, 0);
   const providersRel = rel(vScroll, 0);
   const keynumbersRel = rel(vScroll, 1);
@@ -114,17 +126,19 @@ export default function HomePage() {
     stageIndex,
     slide: EXPLORE_PLATFORM_SLIDES[i],
     rel: rel(vScroll, stageIndex),
-    active: vScroll > stageIndex - 0.5,
+    active: sticky(`explore-${stageIndex}`, vScroll > stageIndex - 0.5),
   }));
   const howItWorksRel = rel(vScroll, HOW_IT_WORKS_STAGE);
+  const howItWorksActive = sticky("howItWorks", vScroll > HOW_IT_WORKS_STAGE - 0.5);
   const getStartedRel = rel(vScroll, GET_STARTED_STAGE);
   const whyLevelsRel = rel(vScroll, WHY_LEVELS_STAGE);
-  const whyLevelsActive = vScroll > WHY_LEVELS_STAGE - 0.5;
+  const whyLevelsActive = sticky("whyLevels", vScroll > WHY_LEVELS_STAGE - 0.5);
   const testimonialsRel = rel(vScroll, TESTIMONIALS_STAGE);
-  const testimonialsActive = vScroll > TESTIMONIALS_STAGE - 0.5;
+  const testimonialsActive = sticky("testimonials", vScroll > TESTIMONIALS_STAGE - 0.5);
   const faqRel = rel(vScroll, FAQ_STAGE);
-  const faqActive = vScroll > FAQ_STAGE - 0.5;
+  const faqActive = sticky("faq", vScroll > FAQ_STAGE - 0.5);
   const ctaRel = rel(vScroll, CTA_STAGE);
+  const ctaActive = sticky("cta", vScroll > CTA_STAGE - 0.5);
 
   return (
     <main
@@ -193,7 +207,7 @@ export default function HomePage() {
             style={{ zIndex: 10, transform: `translateY(${(-howItWorksRel * 100).toFixed(3)}%)` }}
             aria-hidden={!heroExited || howItWorksRel >= 1}
           >
-            <HowItWorksSection />
+            <HowItWorksSection active={howItWorksActive} />
           </div>
 
           <div
@@ -233,7 +247,7 @@ export default function HomePage() {
             style={{ zIndex: 15, transform: `translateY(${(-ctaRel * 100).toFixed(3)}%)` }}
             aria-hidden={!heroExited || ctaRel >= 1}
           >
-            <CTASection />
+            <CTASection active={ctaActive} />
           </div>
         </div>
       </div>

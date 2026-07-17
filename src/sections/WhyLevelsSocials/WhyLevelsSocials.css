@@ -35,7 +35,6 @@
 /* --- Staged entrance (triggered when this section becomes active) ---
    1) header text rises up   2) card row slides in right -> left */
 .why__tag,
-.why__title,
 .why .cta-btn-wrap {
   opacity: 0; transform: translateY(24px);
   transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
@@ -43,12 +42,15 @@
 .why__enter { opacity: 0; transform: translateX(60px); }
 
 .why[data-active="true"] .why__tag,
-.why[data-active="true"] .why__title,
 .why[data-active="true"] .cta-btn-wrap {
   opacity: 1; transform: translateY(0);
 }
+/* Title lines animate via RevealLines (own per-line transition-delay, see
+   WhyLevelsSocialsSection.jsx) — this just flips their masked state on. */
+.why[data-active="true"] .why__title .reveal-line__inner {
+  opacity: 1; transform: translateY(0);
+}
 .why[data-active="true"] .why__tag   { transition-delay: 0.1s; }
-.why[data-active="true"] .why__title { transition-delay: 0.17s; }
 .why[data-active="true"] .cta-btn-wrap { transition-delay: 0.24s; }
 .why[data-active="true"] .why__enter { opacity: 1; transform: translateX(0); transition-delay: 0.35s; }
 

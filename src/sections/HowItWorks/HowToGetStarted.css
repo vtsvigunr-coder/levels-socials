@@ -8,21 +8,18 @@
   padding: 32px 0;
   color: var(--white);
   overflow: hidden;
-  background: var(--black);
 }
-/* Crops the rest (rows 750-1605 of 1605) of the same shared background
-   rectangle .hiw-intro__bg crops the top of (Figma node 799:15809).
-   height% = 175.584% * (1605/855); top% = (-23.77%*1605 - 750) / 855 * 100. */
-.hiw-steps__bg {
-  position: absolute; inset: 0; overflow: hidden;
-  z-index: 0; pointer-events: none;
-}
-.hiw-steps__bgimg {
-  position: absolute; left: -8.31%; top: -132.34%;
-  width: 109.452%; height: 329.72%; max-width: none;
-}
+/* Shared with HowItWorksSection's own copy of these three rules (see the
+   comment in HowItWorksSection.jsx) — that section clips to the top half
+   of the doubled-height image box, this one clips to the bottom half, so
+   together they read as one photo with zero JS and zero scroll-driven
+   movement. */
+.hiw-bg-clip { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
+.hiw-bg-inner { position: absolute; left: 0; right: 0; height: 200%; }
+.hiw-bg-inner--bottom { top: -100%; }
+.hiw-bg-inner__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 .hiw-steps__bggradient {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: radial-gradient(42.17% 57.25% at 51.49% 70.22%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.92) 100%);
 }
 
@@ -46,14 +43,20 @@
 .hiw-steps__cardlabel { font-size: 12px; line-height: 16px; letter-spacing: -0.02em; color: #F1F1F1; }
 .hiw-steps__cardname { display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; margin-top: 6px; }
 .hiw-steps__cardbadge { width: 16px; height: 16px; flex: none; }
-.hiw-steps__cardstat { position: relative; z-index: 1; margin-top: 56px; display: flex; flex-direction: column; gap: 2px; }
+.hiw-steps__cardstat { position: relative; z-index: 1; margin-top: 24px; display: flex; flex-direction: column; gap: 2px; }
 .hiw-steps__cardstatlabel { font-size: 12px; line-height: 16px; letter-spacing: -0.02em; color: #F1F1F1; }
 .hiw-steps__cardstatvalue { font-size: 14px; line-height: 18px; letter-spacing: -0.02em; }
 .hiw-steps__cardchart { position: absolute; left: -2px; right: -2px; bottom: 0; width: calc(100% + 4px); height: auto; z-index: 0; }
 
-.hiw-steps__card--xxxx { width: 183px; height: 134px; display: flex; align-items: center; justify-content: center; }
-.hiw-steps__cardrings { position: absolute; left: 50%; bottom: -95px; width: 194px; height: auto; transform: translateX(-50%); }
-.hiw-steps__cardcounttext { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.hiw-steps__card--xxxx { width: 183px; height: 134px; }
+/* xxxx.svg is pre-cropped to exactly the visible slice (the top arcs of the
+   rings, 183x54) instead of being a full 183x183 circle that CSS then had
+   to crop with an offset — it just sits flush at the card's own bottom. */
+.hiw-steps__cardrings { position: absolute; left: 0; bottom: 0; width: 183px; height: auto; }
+.hiw-steps__cardcounttext {
+  position: absolute; left: 50%; top: 48.8px; transform: translate(-50%, -50%); z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center;
+}
 .hiw-steps__cardcount {
   font-weight: 500; font-size: 28px; line-height: 32px; letter-spacing: -0.02em;
   background: linear-gradient(180deg, var(--white) 0%, rgba(255,255,255,0.3) 100%);
@@ -79,15 +82,21 @@
 .hiw-steps__allocationdot { width: 6px; height: 6px; flex: none; }
 .hiw-steps__allocationpct { background: var(--white); color: var(--accent); border-radius: 13px; padding: 3px 7px; font-size: 12px; line-height: 16px; letter-spacing: -0.02em; white-space: nowrap; }
 
-/* Step 3, card 1 — Account Growth */
-.hiw-steps__growthchart { position: absolute; left: 0; right: 0; top: -20px; width: 100%; height: auto; }
+/* Step 3, card 1 — Account Growth. account-growth.svg is exported at the
+   card's own content width (183px), so it sits flush instead of overflowing
+   and needing a manual centering offset. */
+.hiw-steps__growthchart { position: absolute; left: 0; top: 0; width: 100%; height: auto; }
 .hiw-steps__growthvalue { position: relative; z-index: 1; margin-top: 60px; font-weight: 500; font-size: 24px; line-height: 28px; letter-spacing: -0.02em; }
 .hiw-steps__growthlabel { position: relative; z-index: 1; display: inline-block; margin-top: 8px; background: var(--accent); border-radius: 2px; padding: 2px 8px; font-size: 12px; line-height: 16px; letter-spacing: -0.02em; }
 
-/* Step 3, card 2 — carousel chart */
-.hiw-steps__carousel { position: relative; width: 146px; height: 87px; }
-.hiw-steps__carouselbars { position: absolute; left: 0; top: 0; width: 100%; height: auto; }
-.hiw-steps__carouselline { position: absolute; left: 0; top: 15px; width: 100%; height: auto; }
+/* Step 3, card 2 — control.svg bakes in the bar chart, trend line, and the
+   mini scrollbar-with-dots strip as a single export. Sized down from its
+   native 146px so this card's total height doesn't exceed step 2's Capital
+   Allocation card — the right cardslot bottom-anchors its cards (see
+   .hiw-steps__cardslot--right below), so a taller incoming card would grow
+   upward past the outgoing one during their crossfade instead of just
+   sliding in behind it. */
+.hiw-steps__controlchart { display: block; width: 122px; height: auto; }
 
 /* Step circle */
 .hiw-steps__circle {
@@ -106,16 +115,33 @@
 .hiw-steps__stepname { font-family: var(--font-heading); font-weight: 500; font-size: 28px; line-height: 32px; letter-spacing: -0.02em; transition: opacity 0.3s ease; white-space: nowrap; }
 .hiw-steps__stepdesc { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; max-width: 183px; transition: opacity 0.3s ease; }
 
-/* Step tracker — progress track + fill mirror Selection Standard's pattern */
+/* Step tracker — a plain grey connecting line; progress reads purely from
+   which circles have filled orange (.hiw-steps__trackerdot below), not from
+   any fill on the line itself. Spans dot-center to dot-center (16px = half
+   a 32px dot, inset from each end of the 474px-wide row). */
 .hiw-steps__tracker { position: relative; display: flex; align-items: center; justify-content: space-between; width: 474px; max-width: 100%; }
-.hiw-steps__trackerprogress { position: absolute; left: 43px; top: 16px; width: 388px; height: 1px; }
+.hiw-steps__trackerprogress { position: absolute; left: 16px; top: 15px; width: 442px; height: 2px; }
 .hiw-steps__trackertrack { position: absolute; inset: 0; background: rgba(255,255,255,0.3); }
-.hiw-steps__trackerfill { position: absolute; left: 0; top: 0; height: 100%; background: var(--grad-orange); }
 .hiw-steps__trackerstep { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .hiw-steps__trackerdot {
   --active-t: 0;
   position: relative;
-  width: 32px; height: 32px; border-radius: 60px; border: 1px solid #BEBEBE;
+  /* Without its own stacking context, ::before's z-index: -1 below escapes
+     to this dot's parent (.hiw-steps__trackerstep, itself z-index: 1) and
+     paints behind this dot's own opaque background — the orange fill was
+     compositing under #1c1c1c and never showing at all. isolate scopes
+     that negative z-index to just this dot, so it lands above its own
+     background instead. */
+  isolation: isolate;
+  width: 32px; height: 32px; border-radius: 60px;
+  /* Fades out as the dot fills orange, instead of leaving a grey/white ring
+     around the finished fill. */
+  border: 1px solid rgba(190, 190, 190, calc(1 - var(--active-t)));
+  /* Opaque regardless of active state, so the connecting line (which runs
+     centre-to-centre, passing directly under every dot) never shows through
+     the middle of an unfilled circle — only .hiw-steps__trackerdot::before's
+     orange overlays on top of this once active. */
+  background: #1c1c1c;
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-heading); font-size: 12px; line-height: 16px; letter-spacing: -0.02em;
 }

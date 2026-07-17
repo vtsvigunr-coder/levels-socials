@@ -59,7 +59,7 @@ function ExplorePlatformSlide({ slide, active }) {
             {slide.lead}
           </motion.p>
           <motion.div className="cta-btn-wrap" variants={rise} transition={{ duration: 0.6, ease }}>
-            <Button variant="dark" className="btn--notch-bl">Explore the Platform</Button>
+            <Button variant="dark" className="btn--notch-br">Explore the Platform</Button>
             <GradientDot />
           </motion.div>
         </motion.div>

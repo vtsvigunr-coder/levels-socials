@@ -3,22 +3,34 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  /* flex-start, not center: the accordion list's height changes as items
+     open/close or the category filter shows a different number of items,
+     and centering here would re-center the *whole* section — tag, title,
+     CTA card and all — around that changing height, reading as everything
+     lurching toward the middle. Anchoring to the top means only the list
+     itself grows or shrinks; nothing above or beside it moves. */
+  align-items: flex-start;
   justify-content: center;
   padding: 100px 0;
   background: var(--white);
   color: var(--black);
 }
-.faq__inner { width: 100%; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; padding: 0 120px; }
+.faq__inner { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; gap: 40px; padding: 0 120px; }
 
-/* Left column — tag/title on top, CTA card pinned to the bottom */
-.faq__left { display: flex; flex-direction: column; justify-content: space-between; align-self: stretch; width: 474px; flex: none; }
+/* Left column — tag/title on top, CTA card below at a fixed gap. Not
+   align-self: stretch + justify-content: space-between (which pinned the
+   CTA to the bottom of whichever column — left or right — was taller): the
+   right column's height changes with the category filter and with which
+   accordion item is open, and stretching to match it made the CTA jump up
+   and down every time. A fixed gap keeps it exactly where Figma puts it,
+   independent of the list's height. */
+.faq__left { display: flex; flex-direction: column; width: 474px; flex: none; }
 .faq__intro { display: flex; flex-direction: column; gap: 12px; }
 .faq__tag { display: flex; align-items: center; gap: 16px; font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; }
 .faq__logoicon { width: 16px; height: 16px; }
 .faq__title { font-family: var(--font-heading); font-weight: 500; font-size: 42px; line-height: 46px; letter-spacing: -0.03em; color: var(--black); }
 
-.faq__cta { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; padding: 24px; border-radius: 16px; background: #F1F1F1; margin-top: 40px; }
+.faq__cta { display: flex; flex-direction: column; gap: 32px; align-items: flex-start; width: 229px; flex: none; padding: 24px; border-radius: 16px; background: #F1F1F1; margin-top: 242px; box-sizing: border-box; }
 .faq__ctaicon { width: 24px; height: 24px; }
 .faq__ctaheading { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--black); width: 175px; }
 .faq__ctatext { font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; color: #949494; width: 175px; margin-top: -20px; }
@@ -45,25 +57,41 @@
   display: flex; align-items: center; gap: 24px; width: 100%;
   padding: 24px 16px; border: none; background: none; cursor: pointer; text-align: left;
 }
-.faq__itemtext { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
+.faq__itemtext { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .faq__question { font-family: var(--font-heading); font-weight: 500; font-size: 20px; line-height: 24px; letter-spacing: -0.02em; color: var(--black); }
 .faq__toggleicon { width: 20px; height: 20px; flex: none; object-fit: contain; }
-.faq__answer { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #949494; max-width: 488px; }
+/* Matches the reference site (myhealthprac.com): the answer's own row
+   animates between 0fr and 1fr rather than popping in/out, so it reads as
+   rising into place. The 12px gap to the question (previously a flex `gap`
+   on .faq__itemtext, which would've persisted even at 0fr) lives on
+   .faq__answerinner instead — inside the row that collapses to nothing, so
+   it collapses away too instead of leaving a dead gap under closed items. */
+.faq__answerwrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+.faq__answerwrap--open { grid-template-rows: 1fr; }
+.faq__answerinner { overflow: hidden; min-height: 0; padding-top: 12px; }
+.faq__answer { display: block; font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: #949494; max-width: 488px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq__answerwrap { transition: none; }
+}
 
 /* --- Staged entrance (triggered when this section becomes active) --- */
-.faq__tag, .faq__title, .faq__cta {
+.faq__tag, .faq__cta {
   opacity: 0; transform: translateY(24px);
   transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 .faq__right { opacity: 0; transform: translateX(60px); transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1); }
 
 .faq[data-active="true"] .faq__tag,
-.faq[data-active="true"] .faq__title,
 .faq[data-active="true"] .faq__cta {
   opacity: 1; transform: translateY(0);
 }
+/* Title lines animate via RevealLines (own per-line transition-delay, see
+   FAQSection.jsx) — this just flips their masked state on. */
+.faq[data-active="true"] .faq__title .reveal-line__inner {
+  opacity: 1; transform: translateY(0);
+}
 .faq[data-active="true"] .faq__tag   { transition-delay: 0.1s; }
-.faq[data-active="true"] .faq__title { transition-delay: 0.17s; }
 .faq[data-active="true"] .faq__cta   { transition-delay: 0.24s; }
 .faq[data-active="true"] .faq__right { opacity: 1; transform: translateX(0); transition-delay: 0.35s; }
 
@@ -75,4 +103,7 @@
   .faq { padding: 60px 0; }
   .faq__inner { flex-direction: column; align-items: stretch; padding: 0 20px; gap: 40px; }
   .faq__left, .faq__right { width: 100%; }
+  /* The 242px gap above only makes sense next to the desktop two-column
+     layout; stacked, the CTA just follows the intro at a normal distance. */
+  .faq__cta { margin-top: 40px; width: 100%; }
 }
