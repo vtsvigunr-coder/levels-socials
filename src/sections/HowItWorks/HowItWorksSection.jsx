@@ -3,27 +3,23 @@ import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
 import RevealLines from "../../components/RevealLines.jsx";
 import logoIcon from "../../assets/logo-icon.svg";
-import bgImage from "../../assets/how-it-works/how-it-work.webp";
 import "./HowItWorksIntro.css";
 
 // First half of the "How it Works" spread (Figma node 799:15810) — the
 // second half (799:15818, the step circle) lives in GetStartedSection.jsx.
 // Both sections read as one continuous photo (Figma node 799:15809) without
-// actually animating anything: each embeds the *same* image inside a box
-// twice its own height, `object-fit: cover`'d for a guaranteed gapless fit
-// at any viewport ratio, then this one clips to that box's top half and
-// GetStartedSection's clips to the bottom half (via .hiw-bg-inner--top vs
-// --bottom, a static +/-100% offset — no scroll-driven transform, so the
-// photo never appears to move independently of its own section).
+// actually animating anything: each renders the *same* CSS background (see
+// .hiw-bg-inner in HowItWorksIntro.css) inside a box twice its own height,
+// then this one clips to that box's top half and GetStartedSection's clips
+// to the bottom half (via .hiw-bg-inner--top vs --bottom, a static +/-100%
+// offset — no scroll-driven transform, so the photo never appears to move
+// independently of its own section).
 function HowItWorksSection({ active = false }) {
   return (
     <section className="hiw-intro" data-active={active ? "true" : "false"}>
       <div className="hiw-bg-clip" aria-hidden="true">
-        <div className="hiw-bg-inner hiw-bg-inner--top">
-          <img className="hiw-bg-inner__img" src={bgImage} alt="" />
-        </div>
+        <div className="hiw-bg-inner hiw-bg-inner--top" />
       </div>
-      <div className="hiw-intro__bggradient" aria-hidden="true" />
 
       <div className="hiw-intro__text">
         <div className="hiw-intro__tag">

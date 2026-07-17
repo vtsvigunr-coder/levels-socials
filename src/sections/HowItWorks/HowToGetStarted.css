@@ -11,19 +11,19 @@
   color: var(--white);
   overflow: hidden;
 }
-/* Shared with HowItWorksSection's own copy of these three rules (see the
-   comment in HowItWorksSection.jsx) — that section clips to the top half
-   of the doubled-height image box, this one clips to the bottom half, so
+/* Shared with HowItWorksSection's own copy of these rules (see the comment
+   in HowItWorksSection.jsx) — that section clips to the top half of the
+   doubled-height background box, this one clips to the bottom half, so
    together they read as one photo with zero JS and zero scroll-driven
-   movement. */
+   movement. The image is already graded (dark, orange-toned) in the source
+   file, so it's a plain cover background — no gradient overlay or blend
+   mode layered on top of it. */
 .hiw-bg-clip { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
-.hiw-bg-inner { position: absolute; left: 0; right: 0; height: 200%; }
-.hiw-bg-inner--bottom { top: -100%; }
-.hiw-bg-inner__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.hiw-steps__bggradient {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(42.17% 57.25% at 51.49% 70.22%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.92) 100%);
+.hiw-bg-inner {
+  position: absolute; left: 0; right: 0; height: 200%;
+  background: url(../../assets/how-it-works/how-it-work-2.0.webp) center / cover no-repeat;
 }
+.hiw-bg-inner--bottom { top: -100%; }
 
 .hiw-steps__stage { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 0 120px; }
 

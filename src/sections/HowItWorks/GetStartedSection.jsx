@@ -1,7 +1,6 @@
 import { memo } from "react";
 import GlassSurface from "../../components/GlassSurface.jsx";
 import HOW_IT_WORKS_STEPS from "../../data/howItWorks.js";
-import bgImage from "../../assets/how-it-works/how-it-work.webp";
 import checkmarkBadge from "../../assets/how-it-works/checkmark-badge-01.svg";
 import topProviderChart from "../../assets/how-it-works/top-provider.svg";
 import xxxxRings from "../../assets/how-it-works/xxxx.svg";
@@ -148,11 +147,8 @@ function GetStartedSection({ progress = 0 }) {
   return (
     <section className="hiw-steps">
       <div className="hiw-bg-clip" aria-hidden="true">
-        <div className="hiw-bg-inner hiw-bg-inner--bottom">
-          <img className="hiw-bg-inner__img" src={bgImage} alt="" />
-        </div>
+        <div className="hiw-bg-inner hiw-bg-inner--bottom" />
       </div>
-      <div className="hiw-steps__bggradient" aria-hidden="true" />
 
       <div className="hiw-steps__stage">
         <div className="hiw-steps__cardslot hiw-steps__cardslot--left">

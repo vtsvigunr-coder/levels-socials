@@ -196,7 +196,7 @@ test("Back to top from the footer scrolls the page home", () => {
 
   act(() => { screen.getByRole("button", { name: /back to top/i }).click(); });
 
-  expect(currentLenis().scrollTo).toHaveBeenCalledWith(0, { immediate: true });
+  expect(currentLenis().scrollTo).toHaveBeenCalledWith(0, { immediate: false, duration: 0.8 });
 });
 
 // Smoothing the scroll is motion like any other, and the one kind a reader
