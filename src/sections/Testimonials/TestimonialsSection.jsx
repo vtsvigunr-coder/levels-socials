@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import RevealLines from "../../components/RevealLines.jsx";
 import TestimonialCard from "./TestimonialCard.jsx";
 import TESTIMONIALS from "../../data/testimonials.js";
@@ -11,15 +11,65 @@ const CARD_W = 428;
 const GAP = 20;
 const STEP = CARD_W + GAP;
 const SLIDE_COUNT = TESTIMONIALS.length;
+const DRAG_THRESHOLD = 4;
 
 function TestimonialsSection({ active = false }) {
-  const [index, setIndex] = useState(0);
+  const viewportRef = useRef(null);
+  const trackRef = useRef(null);
+  const dragRef = useRef(null);
 
-  const goPrev = () => setIndex((i) => Math.max(0, i - 1));
-  const goNext = () => setIndex((i) => Math.min(SLIDE_COUNT - 1, i + 1));
+  const [offset, setOffset] = useState(0);
+  const [maxOffset, setMaxOffset] = useState(0);
+  const [viewportW, setViewportW] = useState(0);
+  const [trackW, setTrackW] = useState(0);
+  const [dragging, setDragging] = useState(false);
 
-  const thumbFrac = 1 / SLIDE_COUNT;
-  const thumbPos = SLIDE_COUNT > 1 ? index / (SLIDE_COUNT - 1) : 0;
+  const clamp = useCallback((v, max = maxOffset) => Math.min(Math.max(v, 0), max), [maxOffset]);
+
+  const measure = useCallback(() => {
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    if (!viewport || !track) return;
+    const vw = viewport.clientWidth;
+    const tw = track.scrollWidth;
+    const max = Math.max(0, tw - vw);
+    setViewportW(vw);
+    setTrackW(tw);
+    setMaxOffset(max);
+    setOffset((o) => Math.min(o, max));
+  }, []);
+
+  useEffect(() => {
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [measure]);
+
+  const goPrev = () => setOffset((o) => clamp(o - STEP));
+  const goNext = () => setOffset((o) => clamp(o + STEP));
+
+  const handlePointerDown = (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragRef.current = { startX: e.clientX, startOffset: offset, moved: false };
+    setDragging(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const dx = e.clientX - drag.startX;
+    if (!drag.moved && Math.abs(dx) > DRAG_THRESHOLD) drag.moved = true;
+    if (drag.moved) setOffset(clamp(drag.startOffset - dx));
+  };
+
+  const endDrag = () => {
+    dragRef.current = null;
+    setDragging(false);
+  };
+
+  const thumbFrac = trackW > 0 ? Math.min(1, viewportW / trackW) : 1 / SLIDE_COUNT;
+  const thumbPos = maxOffset > 0 ? offset / maxOffset : 0;
 
   return (
     <section className="testimonials" data-active={active ? "true" : "false"}>
@@ -46,11 +96,17 @@ function TestimonialsSection({ active = false }) {
         </div>
 
         <div className="testimonials__carousel">
-          <div className="testimonials__viewport">
+          <div className="testimonials__viewport" ref={viewportRef}>
             <div className="testimonials__enter">
               <div
-                className="testimonials__track"
-                style={{ transform: `translate3d(${-index * STEP}px,0,0)` }}
+                className={`testimonials__track${dragging ? " is-dragging" : ""}`}
+                ref={trackRef}
+                style={{ transform: `translate3d(${-offset}px,0,0)` }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                onPointerLeave={dragging ? endDrag : undefined}
               >
                 {TESTIMONIALS.map((t) => (
                   <TestimonialCard key={t.id} testimonial={t} />
@@ -68,10 +124,10 @@ function TestimonialsSection({ active = false }) {
               />
             </div>
             <div className="testimonials__arrows">
-              <button type="button" className="testimonials__arrowbtn" onClick={goPrev} disabled={index === 0} aria-label="Previous testimonial">
+              <button type="button" className="testimonials__arrowbtn" onClick={goPrev} disabled={offset <= 0} aria-label="Previous testimonial">
                 <img src={arrowLeft} alt="" aria-hidden="true" />
               </button>
-              <button type="button" className="testimonials__arrowbtn" onClick={goNext} disabled={index === SLIDE_COUNT - 1} aria-label="Next testimonial">
+              <button type="button" className="testimonials__arrowbtn" onClick={goNext} disabled={offset >= maxOffset} aria-label="Next testimonial">
                 <img src={arrowRight} alt="" aria-hidden="true" />
               </button>
             </div>
