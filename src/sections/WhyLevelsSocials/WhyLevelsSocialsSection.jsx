@@ -1,6 +1,7 @@
 import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
+import RevealLines from "../../components/RevealLines.jsx";
 import WhyCard from "./WhyCard.jsx";
 import WHY_LEVELS_SOCIALS from "../../data/whyLevelsSocials.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -26,7 +27,7 @@ function WhyLevelsSocialsSection({ progress = 0, active = false }) {
               <img className="why__logoicon" src={logoIcon} alt="" aria-hidden="true" />
               Why Levels Socials
             </div>
-            <h2 className="why__title">Why Levels Socials</h2>
+            <RevealLines as="h2" className="why__title" lines={["Why Levels Socials"]} baseDelay={0.17} />
           </div>
           <div className="cta-btn-wrap">
             <Button variant="solid" className="btn--notch-br why__btn">Explore Providers</Button>

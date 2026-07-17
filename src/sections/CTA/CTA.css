@@ -17,9 +17,20 @@
   color: var(--white); max-width: 856px;
 }
 .cta__titleaccent { color: var(--accent); }
-.cta__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--white); max-width: 387px; margin-top: 18px; }
+.cta__lead { font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em; color: var(--white); white-space: nowrap; margin-top: 18px; }
+
+/* Title/lead lines animate via RevealLines (own per-line transition-delay,
+   see CTASection.jsx) — this just flips their masked state on once the
+   section becomes active. */
+.cta[data-active="true"] .cta__title .reveal-line__inner,
+.cta[data-active="true"] .cta__lead .reveal-line__inner {
+  opacity: 1; transform: translateY(0);
+}
 
 @media (max-width: 1000px) {
   .cta { padding: 60px 24px; min-height: 600px; }
   .cta__title { font-size: 32px; line-height: 36px; }
+  /* The one-line nowrap above is a desktop-width guarantee; narrow screens
+     don't have the room for it and should wrap normally instead. */
+  .cta__lead { white-space: normal; max-width: 387px; }
 }

@@ -27,8 +27,10 @@ function SelectionStandardSection({ active = false, progress = 0 }) {
   const ease = [0.22, 1, 0.36, 1];
 
   // The CTA trails the real cursor (which stays visible — this isn't a
-  // custom-cursor replacement) with a small lag, across the whole section,
-  // easing back to a rest spot near the graph when the mouse leaves.
+  // custom-cursor replacement) with a small lag, across the whole section.
+  // It stays hidden until the cursor actually enters the section, appearing
+  // right where the cursor is rather than at some fixed rest spot, and
+  // hides again once the cursor leaves.
   const sectionRef = useRef(null);
   const ctaRef = useRef(null);
   const ctaPos = useRef(null);
@@ -37,35 +39,48 @@ function SelectionStandardSection({ active = false, progress = 0 }) {
 
   useEffect(() => {
     const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
-    if (reduced || coarse) return;
     const section = sectionRef.current;
     const cta = ctaRef.current;
     if (!section || !cta) return;
 
-    const restPoint = () => {
-      const r = section.getBoundingClientRect();
-      return { x: r.width * 0.62, y: r.height * 0.55 };
-    };
+    if (reduced || coarse) {
+      // No cursor to chase on touch/reduced-motion — keep the button in its
+      // static fallback position, fully visible.
+      cta.style.opacity = "1";
+      return;
+    }
 
-    const rest = restPoint();
-    ctaPos.current = { ...rest };
-    ctaTarget.current = { ...rest };
+    cta.style.opacity = "0";
 
     const onMove = (e) => {
       const r = section.getBoundingClientRect();
-      ctaTarget.current = { x: e.clientX - r.left, y: e.clientY - r.top };
+      const x = e.clientX - r.left;
+      const y = e.clientY - r.top;
+      if (!ctaPos.current) {
+        // First sighting of the cursor inside the section: appear right
+        // there instead of lagging in from an old position.
+        ctaPos.current = { x, y };
+        cta.style.opacity = "1";
+      }
+      ctaTarget.current = { x, y };
     };
-    const onLeave = () => { ctaTarget.current = restPoint(); };
+    const onLeave = () => {
+      cta.style.opacity = "0";
+      ctaPos.current = null;
+      ctaTarget.current = null;
+    };
 
     section.addEventListener("mousemove", onMove);
     section.addEventListener("mouseleave", onLeave);
 
     const LAG = 0.09; // trailing ease factor — lower = more delay
     const tick = () => {
-      const p = ctaPos.current, t = ctaTarget.current;
-      p.x += (t.x - p.x) * LAG;
-      p.y += (t.y - p.y) * LAG;
-      cta.style.transform = `translate(${p.x + 18}px, ${p.y + 18}px)`;
+      if (ctaPos.current && ctaTarget.current) {
+        const p = ctaPos.current, t = ctaTarget.current;
+        p.x += (t.x - p.x) * LAG;
+        p.y += (t.y - p.y) * LAG;
+        cta.style.transform = `translate(${p.x + 18}px, ${p.y + 18}px)`;
+      }
       ctaRaf.current = requestAnimationFrame(tick);
     };
     ctaRaf.current = requestAnimationFrame(tick);
@@ -134,12 +149,20 @@ function SelectionStandardSection({ active = false, progress = 0 }) {
             <img className="selstd__tagicon" src={logoIcon} alt="" aria-hidden="true" />
             Selection Standard
           </motion.div>
-          <motion.h2 className="selstd__title" variants={rise} transition={{ duration: 0.6, ease }}>
-            Only Selected Providers Reach the Platform
+          <motion.h2 className="selstd__title" variants={lineContainer(0.06)} initial="hidden" animate={animate}>
+            <span className="reveal-line">
+              <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
+                Only Selected Providers Reach the Platform
+              </motion.span>
+            </span>
           </motion.h2>
         </div>
-        <motion.p className="selstd__lead" variants={rise} transition={{ duration: 0.6, ease }}>
-          Every provider is sourced by invitation, reviewed against documented criteria, tested, and verified before going live
+        <motion.p className="selstd__lead" variants={lineContainer(0.06)} initial="hidden" animate={animate}>
+          <span className="reveal-line">
+            <motion.span style={{ display: "block" }} variants={rise} transition={{ duration: 0.6, ease }}>
+              Every provider is sourced by invitation, reviewed against documented criteria, tested, and verified before going live
+            </motion.span>
+          </span>
         </motion.p>
       </motion.div>
 

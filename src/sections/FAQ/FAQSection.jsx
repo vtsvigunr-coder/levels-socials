@@ -3,6 +3,7 @@ import CategoryTabs from "./CategoryTabs.jsx";
 import FAQItem from "./FAQItem.jsx";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
+import RevealLines from "../../components/RevealLines.jsx";
 import FAQ_ITEMS from "../../data/faq.js";
 import logoIcon from "../../assets/logo-icon.svg";
 import chatIcon from "../../assets/faq/message-multiple-01.svg";
@@ -28,7 +29,7 @@ function FAQSection({ active = false }) {
               <img className="faq__logoicon" src={logoIcon} alt="" aria-hidden="true" />
               FAQs
             </div>
-            <h2 className="faq__title">Frequently Asked Questions</h2>
+            <RevealLines as="h2" className="faq__title" lines={["Frequently Asked Questions"]} baseDelay={0.17} />
           </div>
 
           <div className="faq__cta">

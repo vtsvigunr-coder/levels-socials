@@ -1,4 +1,5 @@
 import { memo, useState } from "react";
+import RevealLines from "../../components/RevealLines.jsx";
 import TestimonialCard from "./TestimonialCard.jsx";
 import TESTIMONIALS from "../../data/testimonials.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -14,8 +15,8 @@ const SLIDE_COUNT = TESTIMONIALS.length;
 function TestimonialsSection({ active = false }) {
   const [index, setIndex] = useState(0);
 
-  const goPrev = () => setIndex((i) => (i - 1 + SLIDE_COUNT) % SLIDE_COUNT);
-  const goNext = () => setIndex((i) => (i + 1) % SLIDE_COUNT);
+  const goPrev = () => setIndex((i) => Math.max(0, i - 1));
+  const goNext = () => setIndex((i) => Math.min(SLIDE_COUNT - 1, i + 1));
 
   const thumbFrac = 1 / SLIDE_COUNT;
   const thumbPos = SLIDE_COUNT > 1 ? index / (SLIDE_COUNT - 1) : 0;
@@ -29,8 +30,18 @@ function TestimonialsSection({ active = false }) {
             Trust &amp; Transparency
           </div>
           <div className="testimonials__headtext">
-            <h2 className="testimonials__title">See Every Trade Clearly and Keep Capital Control</h2>
-            <p className="testimonials__lead">Every trade, every position, every result — visible in real time</p>
+            <RevealLines
+              as="h2"
+              className="testimonials__title"
+              lines={["See Every Trade Clearly and Keep Capital Control"]}
+              baseDelay={0.17}
+            />
+            <RevealLines
+              as="p"
+              className="testimonials__lead"
+              lines={["Every trade, every position, every result", "— visible in real time"]}
+              baseDelay={0.17}
+            />
           </div>
         </div>
 
@@ -57,10 +68,10 @@ function TestimonialsSection({ active = false }) {
               />
             </div>
             <div className="testimonials__arrows">
-              <button type="button" className="testimonials__arrowbtn" onClick={goPrev} aria-label="Previous testimonial">
+              <button type="button" className="testimonials__arrowbtn" onClick={goPrev} disabled={index === 0} aria-label="Previous testimonial">
                 <img src={arrowLeft} alt="" aria-hidden="true" />
               </button>
-              <button type="button" className="testimonials__arrowbtn" onClick={goNext} aria-label="Next testimonial">
+              <button type="button" className="testimonials__arrowbtn" onClick={goNext} disabled={index === SLIDE_COUNT - 1} aria-label="Next testimonial">
                 <img src={arrowRight} alt="" aria-hidden="true" />
               </button>
             </div>

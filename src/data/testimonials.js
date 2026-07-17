@@ -32,14 +32,6 @@ const TESTIMONIALS = [
     quote:
       "Honestly, I love the diversity of providers at Levels. I started with Aurum Eterna, then added WSW AI and Ares Capital into my portfolio. The portal lets me see them side by side and manage my allocation. It feels like I'm managing a mini hedge fund from my phone.",
   },
-  {
-    id: "william-miller-3",
-    name: "William Miller",
-    role: "Trader",
-    rating: 4.8,
-    quote:
-      "Honestly, I love the diversity of providers at Levels. I started with Aurum Eterna, then added WSW AI and Ares Capital into my portfolio. The portal lets me see them side by side and manage my allocation. It feels like I'm managing a mini hedge fund from my phone.",
-  },
 ];
 
 export default TESTIMONIALS;

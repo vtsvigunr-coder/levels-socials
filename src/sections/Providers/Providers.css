@@ -5,14 +5,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 0;
+  padding: 100px 0;
   color: var(--white);
 }
 .providers__inner {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 72px;
 }
 
 /* Header — inset to align with the first card's 120px left edge */
@@ -35,6 +35,9 @@
   display: flex; align-items: center; gap: 8px; flex: none;
   color: var(--white); font-family: var(--font-heading); font-size: 16px; line-height: 20px; letter-spacing: -0.02em;
   white-space: nowrap;
+  /* Design gives this a wider 80px gap from the last card than the 20px
+     between cards — track's `gap` covers 20px of it, this covers the rest. */
+  margin-left: 60px;
 }
 .providers__finalctaicon { width: 12px; height: 17px; transform: rotate(90deg); }
 
@@ -43,8 +46,6 @@
    This one stagger stays time-based rather than scroll-linked: it's a flourish
    that plays on arrival, not something that should rewind under a scroll-up. */
 .providers__tag,
-.providers__title,
-.providers__lead,
 .providers__cta .cta-btn-wrap {
   opacity: 0; transform: translateY(24px);
   transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1);
@@ -52,20 +53,21 @@
 .providers__enter { opacity: 0; transform: translateX(60px); }
 
 .home[data-hero-exited="true"] .providers__tag,
-.home[data-hero-exited="true"] .providers__title,
-.home[data-hero-exited="true"] .providers__lead,
 .home[data-hero-exited="true"] .providers__cta .cta-btn-wrap {
   opacity: 1; transform: translateY(0);
 }
+/* Title/lead lines animate via RevealLines (own per-line transition-delay,
+   see ProvidersSection.jsx) — this just flips their masked state on. */
+.home[data-hero-exited="true"] .providers__title .reveal-line__inner,
+.home[data-hero-exited="true"] .providers__lead .reveal-line__inner {
+  opacity: 1; transform: translateY(0);
+}
 .home[data-hero-exited="true"] .providers__tag   { transition-delay: 0.45s; }
-.home[data-hero-exited="true"] .providers__title { transition-delay: 0.52s; }
-.home[data-hero-exited="true"] .providers__lead  { transition-delay: 0.52s; }
 .home[data-hero-exited="true"] .providers__cta .cta-btn-wrap { transition-delay: 0.60s; }
 .home[data-hero-exited="true"] .providers__enter { opacity: 1; transform: translateX(0); transition-delay: 0.75s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .providers__tag, .providers__title, .providers__lead,
-  .providers__cta .cta-btn-wrap, .providers__enter {
+  .providers__tag, .providers__cta .cta-btn-wrap, .providers__enter {
     opacity: 1; transform: none; transition: none;
   }
 }
@@ -125,6 +127,7 @@
 
 @media (max-width: 1000px) {
   .providers { padding: 40px 0; }
+  .providers__inner { gap: 40px; }
   .providers__text { flex-direction: column; align-items: flex-start; gap: 24px; padding: 0 20px; }
   .providers__track { padding-left: 20px; }
 }

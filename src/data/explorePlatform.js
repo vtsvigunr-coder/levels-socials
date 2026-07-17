@@ -36,8 +36,9 @@ const EXPLORE_PLATFORM_SLIDES = [
     id: "dashboard",
     layout: "card-left",
     lines: [
-      [{ text: "Everything You Need to See" }],
-      [{ text: "Before Deciding", accent: true }],
+      [{ text: "Everything You" }],
+      [{ text: "Need to See " }, { text: "Before", accent: true }],
+      [{ text: "Deciding", accent: true }],
     ],
     lead: "Full provider data, performance history, and portfolio tools — all in your dashboard.",
   },

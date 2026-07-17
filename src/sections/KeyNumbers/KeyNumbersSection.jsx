@@ -1,6 +1,7 @@
 import { memo } from "react";
 import Button from "../../components/Button.jsx";
 import GradientDot from "../../components/GradientDot.jsx";
+import RevealLines from "../../components/RevealLines.jsx";
 import KeyNumberCard from "./KeyNumberCard.jsx";
 import KEY_NUMBERS from "../../data/keyNumbers.js";
 import logoIcon from "../../assets/logo-icon.svg";
@@ -16,8 +17,8 @@ function KeyNumbersSection() {
             Key Numbers
           </div>
           <div className="keynum__headtext">
-            <h2 className="keynum__title">Levels Socials Today</h2>
-            <p className="keynum__subtitle">A live platform, with real capital and activity.</p>
+            <RevealLines as="h2" className="keynum__title" lines={["Levels Socials Today"]} baseDelay={0.12} />
+            <RevealLines as="p" className="keynum__subtitle" lines={["A live platform, with real capital and activity."]} baseDelay={0.18} />
           </div>
         </div>
 

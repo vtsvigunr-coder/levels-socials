@@ -48,9 +48,12 @@
   pointer-events: none;
 }
 /* CTA trails the real (still visible) cursor with a small lag, positioned
-   via JS each frame with a translate() — no CSS transition here, since that
-   would fight the per-frame easing already applied in JS. */
-.selstd__cta { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; will-change: transform; }
+   via JS each frame with a translate() — no CSS transition on transform,
+   since that would fight the per-frame easing already applied in JS. Its
+   visibility (hidden until the cursor enters the section, hidden again once
+   it leaves) is also toggled from JS via style.opacity — the CSS opacity
+   transition here just softens that jump into a fade. */
+.selstd__cta { position: absolute; left: 0; top: 0; z-index: 2; pointer-events: none; will-change: transform, opacity; opacity: 0; transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .selstd__cta .btn { pointer-events: auto; }
 
 .selstd__desc { position: absolute; left: 0; top: 46%; width: 287px; height: 40px; }

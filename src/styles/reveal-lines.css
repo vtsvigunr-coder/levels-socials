@@ -1,0 +1,18 @@
+/* Shared "line reveal" mask, matching Hero's title (see hero-title/hero-line
+   in src/sections/Hero/Hero.css): each line sits behind an overflow-hidden
+   mask and rises up into view from underneath it, rather than simply fading
+   in place. Sections wire their own entrance-trigger selector (their
+   existing `data-active`/`data-*-active` attribute) and per-line
+   transition-delay on top of this shared shape. */
+.reveal-line { display: block; overflow: hidden; }
+.reveal-line__inner {
+  display: block;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line__inner { opacity: 1; transform: none; transition: none; }
+}
