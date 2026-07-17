@@ -11,19 +11,19 @@
   color: var(--white);
   overflow: hidden;
 }
-/* Shared with GetStartedSection's own copy of these three rules (see the
-   comment in HowItWorksSection.jsx) — this section clips to the top half
-   of the doubled-height image box, the other section clips to the bottom
+/* Shared with GetStartedSection's own copy of these rules (see the comment
+   in HowItWorksSection.jsx) — this section clips to the top half of the
+   doubled-height background box, the other section clips to the bottom
    half, so together they read as one photo with zero JS and zero
-   scroll-driven movement. */
+   scroll-driven movement. The image is already graded (dark, orange-toned)
+   in the source file, so it's a plain cover background — no gradient
+   overlay or blend mode layered on top of it. */
 .hiw-bg-clip { position: absolute; inset: 0; overflow: hidden; z-index: 0; pointer-events: none; }
-.hiw-bg-inner { position: absolute; left: 0; right: 0; height: 200%; }
-.hiw-bg-inner--top { top: 0; }
-.hiw-bg-inner__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.hiw-intro__bggradient {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(42.17% 57.25% at 51.49% 70.22%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.92) 100%);
+.hiw-bg-inner {
+  position: absolute; left: 0; right: 0; height: 200%;
+  background: url(../../assets/how-it-works/how-it-work-2.0.webp) center / cover no-repeat;
 }
+.hiw-bg-inner--top { top: 0; }
 
 .hiw-intro__text { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; padding: 0 20px; }
 .hiw-intro__tag { display: flex; align-items: center; gap: 16px; font-family: var(--font-heading); font-size: 14px; line-height: 18px; letter-spacing: -0.02em; }
