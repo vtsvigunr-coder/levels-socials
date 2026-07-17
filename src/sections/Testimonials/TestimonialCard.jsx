@@ -1,6 +1,5 @@
 import StarRating from "./StarRating.jsx";
 import logoBadge from "../../assets/testimonials/logo-badge.svg";
-import arrowUpRight from "../../assets/icons/arrow-up-right.svg";
 
 export default function TestimonialCard({ testimonial }) {
   const { name, role, rating, quote } = testimonial;
@@ -18,9 +17,6 @@ export default function TestimonialCard({ testimonial }) {
           <span className="tcard__role">{role}</span>
           <img className="tcard__badge" src={logoBadge} alt="" aria-hidden="true" />
         </div>
-        <span className="tcard__link" aria-hidden="true">
-          <img className="tcard__linkicon" src={arrowUpRight} alt="" />
-        </span>
       </div>
     </article>
   );

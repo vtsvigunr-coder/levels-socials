@@ -11,7 +11,7 @@ import "./FAQ.css";
 
 function FAQSection({ active = false }) {
   const [category, setCategory] = useState("all");
-  const [openId, setOpenId] = useState(FAQ_ITEMS[1].id);
+  const [openId, setOpenId] = useState(FAQ_ITEMS[0].id);
 
   const visibleItems = category === "all" ? FAQ_ITEMS : FAQ_ITEMS.filter((item) => item.category === category);
 
